@@ -21,7 +21,7 @@ const Header: React.FC = () => {
             <Link to="/como-funciona" className="text-juris-text hover:text-white transition-colors">
               Como Funciona
             </Link>
-            <Link to="/" className="text-juris-text hover:text-white transition-colors">
+            <Link to="/contato" className="text-juris-text hover:text-white transition-colors">
               Contato
             </Link>
           </nav>
