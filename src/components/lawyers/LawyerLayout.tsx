@@ -7,7 +7,7 @@ import LawyerHeader from "./LawyerHeader";
 import { useToast } from "@/hooks/use-toast";
 
 const LawyerLayout: React.FC = () => {
-  const { isAuthenticated, user } = useAdminAuth();
+  const { isAuthenticated, user, lawyer } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -15,6 +15,7 @@ const LawyerLayout: React.FC = () => {
   // Lista de emails administrativos
   const adminEmails = ['admin@jurisquick.com'];
   const isAdmin = adminEmails.includes(user?.email || '');
+  const isApproved = lawyer?.status === "approved";
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -31,17 +32,28 @@ const LawyerLayout: React.FC = () => {
           });
           navigate("/admin/dashboard");
         }
-      } else if (location.pathname === '/admin/aprovacoes') {
-        // Não-admins tentando acessar página de aprovações
-        toast({
-          title: "Acesso restrito",
-          description: "Você não tem permissão para acessar essa página.",
-          variant: "destructive"
-        });
-        navigate("/admin/dashboard");
+      } else {
+        // Verificações para advogados não-admin
+        if (location.pathname === '/admin/aprovacoes') {
+          // Não-admins tentando acessar página de aprovações
+          toast({
+            title: "Acesso restrito",
+            description: "Você não tem permissão para acessar essa página.",
+            variant: "destructive"
+          });
+          navigate("/admin/dashboard");
+        } else if (!isApproved && location.pathname === '/admin/leads') {
+          // Advogados não aprovados tentando acessar a página de leads
+          toast({
+            title: "Acesso restrito",
+            description: "Você precisa ter sua conta aprovada para acessar os leads.",
+            variant: "destructive"
+          });
+          navigate("/admin/dashboard");
+        }
       }
     }
-  }, [isAuthenticated, navigate, location.pathname, user, toast, isAdmin]);
+  }, [isAuthenticated, navigate, location.pathname, user, toast, isAdmin, lawyer, isApproved]);
 
   if (!isAuthenticated) {
     return null;
