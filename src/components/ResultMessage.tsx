@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Link, Copy } from 'lucide-react';
+import { Link, Copy, Loader2 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ResultMessageProps {
   message: string;
@@ -17,6 +19,9 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
   isActive,
   onRestart
 }) => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
   if (!isActive) return null;
 
   const phoneNumber = "5511999999999"; // Substitua pelo número do WhatsApp
@@ -25,7 +30,87 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
   
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message);
-    alert("Mensagem copiada para a área de transferência!");
+    toast({
+      title: "Copiado!",
+      description: "Mensagem copiada para a área de transferência",
+    });
+  };
+
+  const handleWhatsAppClick = async () => {
+    setIsLoading(true);
+    try {
+      // Obter um advogado aleatório da área de atuação
+      const { data: lawyers, error: lawyersError } = await supabase
+        .from('lawyers')
+        .select('id')
+        .eq('specialty', areaExpert.toLowerCase())
+        .eq('subscription_active', true)
+        .limit(1);
+
+      if (lawyersError) throw lawyersError;
+
+      if (!lawyers || lawyers.length === 0) {
+        console.log('Nenhum advogado encontrado para a área:', areaExpert);
+        // Não encontrou advogado especialista, tenta encontrar qualquer advogado ativo
+        const { data: anyLawyers, error: anyLawyersError } = await supabase
+          .from('lawyers')
+          .select('id')
+          .eq('subscription_active', true)
+          .limit(1);
+          
+        if (anyLawyersError) throw anyLawyersError;
+        
+        if (!anyLawyers || anyLawyers.length === 0) {
+          throw new Error('Nenhum advogado disponível no sistema');
+        }
+        
+        // Usar qualquer advogado ativo
+        await createLead(anyLawyers[0].id);
+      } else {
+        // Usar advogado especialista
+        await createLead(lawyers[0].id);
+      }
+
+      // Abrir o WhatsApp
+      window.open(whatsappUrl, '_blank');
+    } catch (error) {
+      console.error('Erro ao processar lead:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível processar seu pedido. Tente novamente.",
+        variant: "destructive"
+      });
+      
+      // Ainda abrir o WhatsApp mesmo com erro
+      window.open(whatsappUrl, '_blank');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createLead = async (lawyerId: string) => {
+    // Gerar um nome e email fictício para o lead (na prática, você coletaria isso do usuário)
+    const clientName = `Cliente ${new Date().getTime()}`;
+    const clientEmail = `cliente_${new Date().getTime()}@example.com`;
+    
+    const { error } = await supabase
+      .from('leads')
+      .insert({
+        lawyer_id: lawyerId,
+        client_name: clientName,
+        client_email: clientEmail,
+        case_area: areaExpert.toLowerCase(),
+        description: message,
+        status: 'pending'
+      });
+    
+    if (error) throw error;
+    
+    console.log('Lead criado com sucesso para o advogado:', lawyerId);
+    toast({
+      title: "Sucesso!",
+      description: "Seu contato foi encaminhado para um advogado especialista.",
+    });
   };
 
   return (
@@ -54,10 +139,18 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
 
       <div className="space-y-4">
         <Button 
-          className="w-full btn-primary"
-          onClick={() => window.open(whatsappUrl, '_blank')}
+          className="w-full btn-primary relative"
+          onClick={handleWhatsAppClick}
+          disabled={isLoading}
         >
-          Enviar mensagem via WhatsApp
+          {isLoading ? (
+            <>
+              <Loader2 size={16} className="mr-2 animate-spin" />
+              Processando...
+            </>
+          ) : (
+            "Enviar mensagem via WhatsApp"
+          )}
         </Button>
         
         <Button 
