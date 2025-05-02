@@ -1,3 +1,6 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,19 +38,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -96,6 +92,28 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-juris-dark text-juris-text;
+    font-family: 'Inter', sans-serif;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    @apply font-medium text-juris-text;
+  }
+}
+
+.container-custom {
+  @apply container mx-auto px-4 md:px-8 lg:max-w-5xl xl:max-w-6xl;
+}
+
+.btn-primary {
+  @apply bg-juris-accent hover:bg-opacity-90 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 inline-block text-center;
+}
+
+.step-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.card-custom {
+  @apply bg-white bg-opacity-5 backdrop-filter backdrop-blur-md rounded-xl border border-white border-opacity-10 shadow-lg p-6;
 }
