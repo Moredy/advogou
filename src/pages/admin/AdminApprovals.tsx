@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,19 +30,22 @@ const AdminApprovals: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      fetchPendingLawyers();
+      fetchLawyers();
     }
   }, [user]);
 
-  const fetchPendingLawyers = async () => {
+  const fetchLawyers = async () => {
     setLoading(true);
     try {
+      console.log("Buscando todos os advogados cadastrados");
       const { data, error } = await supabase
         .from('lawyers')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.log("Advogados encontrados:", data);
       
       // Transform the data to ensure type safety with our Lawyer type
       const transformedData: Lawyer[] = data.map((lawyer: any) => ({
@@ -59,10 +61,10 @@ const AdminApprovals: React.FC = () => {
       
       setLawyers(transformedData);
     } catch (error) {
-      console.error('Error fetching pending lawyers:', error);
+      console.error('Erro ao buscar advogados:', error);
       toast({
         title: "Erro ao carregar dados",
-        description: "Não foi possível carregar a lista de advogados pendentes.",
+        description: "Não foi possível carregar a lista de advogados.",
         variant: "destructive"
       });
     } finally {
@@ -93,7 +95,7 @@ const AdminApprovals: React.FC = () => {
         variant: "default"
       });
     } catch (error) {
-      console.error('Error updating lawyer status:', error);
+      console.error('Erro ao atualizar status do advogado:', error);
       toast({
         title: "Erro ao atualizar status",
         description: "Não foi possível atualizar o status do advogado.",
@@ -149,9 +151,14 @@ const AdminApprovals: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Validação de Advogados</h1>
+        <Button onClick={fetchLawyers} variant="outline" size="sm" className="gap-2">
+          <Loader2 className="h-4 w-4" />
+          Atualizar lista
+        </Button>
       </div>
 
       {selectedLawyer ? (
+        
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
