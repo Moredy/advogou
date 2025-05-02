@@ -40,8 +40,7 @@ const AdminApprovals: React.FC = () => {
     try {
       console.log("Buscando todos os advogados cadastrados");
       
-      // Usando ".from('lawyers').select('*')" sem filtros adicionais para obter todos os registros
-      // Adicionando cabeçalho para usar a chave de serviço em vez das permissões do usuário atual
+      // Create a query that doesn't filter by the authenticated user
       const { data, error } = await supabase
         .from('lawyers')
         .select('*')
