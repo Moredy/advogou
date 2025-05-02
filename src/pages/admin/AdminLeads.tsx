@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,11 +19,14 @@ type Lead = {
   client_name: string;
   case_area: string;
   created_at: string;
-  description: string;
+  description: string | null;
   status: LeadStatus;
   quality_rating?: number;
   relevant?: boolean;
   comments?: string;
+  client_email: string;
+  lawyer_id: string;
+  updated_at: string;
 };
 
 const AdminLeads: React.FC = () => {
@@ -60,12 +64,14 @@ const AdminLeads: React.FC = () => {
         throw error;
       }
 
-      // Cast the status to ensure it matches the LeadStatus type
       if (data) {
-        setLeads(data.map(lead => ({
+        // Cast the status to ensure it matches the LeadStatus type
+        const typedLeads = data.map(lead => ({
           ...lead,
           status: lead.status as LeadStatus
-        })));
+        }));
+        
+        setLeads(typedLeads);
       }
     } catch (error) {
       console.error('Erro ao carregar leads:', error);

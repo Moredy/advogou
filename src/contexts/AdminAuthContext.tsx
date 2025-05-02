@@ -12,6 +12,10 @@ type Lawyer = {
   specialty: string;
   plan_type: "basic" | "premium" | "enterprise" | null;
   subscription_active: boolean;
+  bio?: string;
+  phone?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 interface AdminAuthContextType {

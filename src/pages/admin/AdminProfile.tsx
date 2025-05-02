@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,16 +8,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminProfile: React.FC = () => {
-  const { lawyer } = useAdminAuth();
+  const { lawyer, user } = useAdminAuth();
   const { toast } = useToast();
   
   const [personalInfo, setPersonalInfo] = useState({
     name: lawyer?.name || "",
     email: lawyer?.email || "",
-    phone: "",
-    oabNumber: lawyer?.oab_number || "", // Changed from oabNumber to oab_number to match the Lawyer type
+    phone: lawyer?.phone || "",
+    oab_number: lawyer?.oab_number || "",
   });
   
   const [specialties, setSpecialties] = useState<string[]>([
@@ -27,36 +27,100 @@ const AdminProfile: React.FC = () => {
 
   const [specialty, setSpecialty] = useState("");
   
-  const [bio, setBio] = useState("");
+  const [bio, setBio] = useState(lawyer?.bio || "");
   
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Atualiza os dados quando o advogado for carregado
+  useEffect(() => {
+    if (lawyer) {
+      setPersonalInfo({
+        name: lawyer.name || "",
+        email: lawyer.email || "",
+        phone: lawyer.phone || "",
+        oab_number: lawyer.oab_number || "",
+      });
+      
+      if (lawyer.specialty) {
+        setSpecialties([lawyer.specialty]);
+      }
+      
+      if (lawyer.bio) {
+        setBio(lawyer.bio);
+      }
+    }
+  }, [lawyer]);
 
-  const handleSavePersonal = (e: React.FormEvent) => {
+  const handleSavePersonal = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setIsSaving(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const { error } = await supabase
+        .from('lawyers')
+        .update({
+          name: personalInfo.name,
+          email: personalInfo.email,
+          phone: personalInfo.phone,
+          oab_number: personalInfo.oab_number,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
       toast({
         title: "Perfil atualizado",
         description: "Suas informações foram atualizadas com sucesso.",
       });
+    } catch (error: any) {
+      console.error('Erro ao atualizar perfil:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível atualizar suas informações. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSaving(false);
-    }, 1000);
+    }
   };
   
-  const handleSaveSpecialties = (e: React.FormEvent) => {
+  const handleSaveSpecialties = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setIsSaving(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Pegamos a primeira especialidade da lista
+      const primarySpecialty = specialties[0] || "Direito Civil";
+      
+      const { error } = await supabase
+        .from('lawyers')
+        .update({
+          specialty: primarySpecialty,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
       toast({
         title: "Especialidades atualizadas",
         description: "Suas áreas de atuação foram atualizadas com sucesso.",
       });
+    } catch (error) {
+      console.error('Erro ao atualizar especialidades:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível atualizar suas áreas de atuação. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSaving(false);
-    }, 1000);
+    }
   };
   
   const handleAddSpecialty = () => {
@@ -70,18 +134,37 @@ const AdminProfile: React.FC = () => {
     setSpecialties(specialties.filter((_, i) => i !== index));
   };
   
-  const handleSaveBio = (e: React.FormEvent) => {
+  const handleSaveBio = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setIsSaving(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const { error } = await supabase
+        .from('lawyers')
+        .update({
+          bio: bio,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
       toast({
         title: "Biografia atualizada",
         description: "Sua biografia foi atualizada com sucesso.",
       });
+    } catch (error) {
+      console.error('Erro ao atualizar biografia:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível atualizar sua biografia. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSaving(false);
-    }, 1000);
+    }
   };
 
   const availableAreas = [
@@ -155,8 +238,8 @@ const AdminProfile: React.FC = () => {
                     <Label htmlFor="oab">Número OAB</Label>
                     <Input
                       id="oab"
-                      value={personalInfo.oabNumber}
-                      onChange={(e) => setPersonalInfo({ ...personalInfo, oabNumber: e.target.value })}
+                      value={personalInfo.oab_number}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, oab_number: e.target.value })}
                     />
                   </div>
                 </div>

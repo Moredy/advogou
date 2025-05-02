@@ -21,6 +21,14 @@ const AdminPlans: React.FC = () => {
   const { lawyer, user } = useAdminAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+
+  // Carregar o plano atual do advogado
+  useEffect(() => {
+    if (lawyer) {
+      setCurrentPlan(lawyer.plan_type);
+    }
+  }, [lawyer]);
 
   // Atualize os dados do advogado quando a página for carregada
   useEffect(() => {
@@ -41,6 +49,11 @@ const AdminPlans: React.FC = () => {
         
       if (error) {
         console.error('Erro ao buscar dados do advogado:', error);
+        return;
+      }
+      
+      if (data) {
+        setCurrentPlan(data.plan_type);
       }
     } catch (error) {
       console.error('Erro ao buscar dados do advogado:', error);
@@ -108,6 +121,8 @@ const AdminPlans: React.FC = () => {
 
       if (error) throw error;
 
+      setCurrentPlan(planId);
+      
       toast({
         title: "Plano assinado com sucesso!",
         description: `Você assinou o plano ${plans.find(p => p.id === planId)?.name}. Você começará a receber leads em breve.`,
