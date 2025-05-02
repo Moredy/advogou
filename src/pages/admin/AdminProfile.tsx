@@ -10,6 +10,7 @@ import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const AdminProfile: React.FC = () => {
   const { lawyer, user, refreshLawyerProfile } = useAdminAuth();
@@ -22,14 +23,9 @@ const AdminProfile: React.FC = () => {
     oab_number: lawyer?.oab_number || "",
   });
   
-  const [specialties, setSpecialties] = useState<string[]>([
-    lawyer?.specialty || "Direito Civil"
-  ]);
-
+  const [specialties, setSpecialties] = useState<string[]>([]);
   const [specialty, setSpecialty] = useState("");
-  
   const [bio, setBio] = useState(lawyer?.bio || "");
-  
   const [isSaving, setIsSaving] = useState(false);
   
   // Atualiza os dados quando o advogado for carregado
@@ -102,8 +98,13 @@ const AdminProfile: React.FC = () => {
     console.log("Salvando especialidades:", specialties);
     
     try {
+      // Verificamos se há especialidades selecionadas
+      if (specialties.length === 0) {
+        throw new Error("Selecione pelo menos uma área de atuação");
+      }
+      
       // Pegamos a primeira especialidade da lista
-      const primarySpecialty = specialties[0] || "Direito Civil";
+      const primarySpecialty = specialties[0];
       
       const { error } = await supabase
         .from('lawyers')
@@ -122,11 +123,11 @@ const AdminProfile: React.FC = () => {
       
       // Atualiza os dados do advogado no contexto
       await refreshLawyerProfile();
-    } catch (error) {
-      console.error('Erro ao atualizar especialidades:', error);
+    } catch (error: any) {
+      console.error('Erro ao atualizar especialidades:', error, typeof error);
       toast({
         title: "Erro ao salvar",
-        description: "Não foi possível atualizar suas áreas de atuação. Tente novamente.",
+        description: error.message || "Não foi possível atualizar suas áreas de atuação. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -136,13 +137,13 @@ const AdminProfile: React.FC = () => {
   
   const handleAddSpecialty = () => {
     if (specialty && !specialties.includes(specialty)) {
-      setSpecialties([...specialties, specialty]);
+      setSpecialties(prev => [...prev, specialty]);
       setSpecialty("");
     }
   };
   
   const handleRemoveSpecialty = (index: number) => {
-    setSpecialties(specialties.filter((_, i) => i !== index));
+    setSpecialties(prev => prev.filter((_, i) => i !== index));
   };
   
   const handleSaveBio = async (e: React.FormEvent) => {
@@ -195,6 +196,12 @@ const AdminProfile: React.FC = () => {
     "Direito de Família"
   ];
 
+  const handleSelectSpecialty = (value: string) => {
+    if (!specialties.includes(value)) {
+      setSpecialties(prev => [...prev, value]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -245,7 +252,7 @@ const AdminProfile: React.FC = () => {
                     <Label htmlFor="phone">Telefone</Label>
                     <Input
                       id="phone"
-                      value={personalInfo.phone}
+                      value={personalInfo.phone || ""}
                       onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
                     />
                   </div>
@@ -297,30 +304,51 @@ const AdminProfile: React.FC = () => {
                         </button>
                       </div>
                     ))}
+                    
+                    {specialties.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Nenhuma área de atuação selecionada. Selecione pelo menos uma área abaixo.
+                      </p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="add-specialty">Adicionar nova área</Label>
+                  <Label htmlFor="add-specialty">Selecionar área</Label>
                   <div className="flex gap-2">
-                    <Input
-                      id="add-specialty"
-                      value={specialty}
-                      onChange={(e) => setSpecialty(e.target.value)}
-                      list="specialties-list"
-                    />
-                    <datalist id="specialties-list">
-                      {availableAreas.map((area) => (
-                        <option key={area} value={area} />
-                      ))}
-                    </datalist>
-                    <Button 
-                      type="button" 
-                      onClick={handleAddSpecialty}
-                      disabled={!specialty}
-                    >
-                      Adicionar
-                    </Button>
+                    <Select onValueChange={handleSelectSpecialty}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione uma área" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableAreas
+                          .filter(area => !specialties.includes(area))
+                          .map((area) => (
+                            <SelectItem key={area} value={area}>
+                              {area}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2 mt-4">
+                    <Label htmlFor="custom-specialty">Ou adicione área personalizada</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="custom-specialty"
+                        value={specialty}
+                        onChange={(e) => setSpecialty(e.target.value)}
+                        placeholder="Digite uma área personalizada"
+                      />
+                      <Button 
+                        type="button" 
+                        onClick={handleAddSpecialty}
+                        disabled={!specialty || specialties.includes(specialty)}
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 
@@ -334,9 +362,11 @@ const AdminProfile: React.FC = () => {
                           checked={specialties.includes(area)}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              setSpecialties([...specialties, area]);
+                              if (!specialties.includes(area)) {
+                                setSpecialties(prev => [...prev, area]);
+                              }
                             } else {
-                              setSpecialties(specialties.filter(s => s !== area));
+                              setSpecialties(prev => prev.filter(s => s !== area));
                             }
                           }}
                         />
@@ -352,7 +382,7 @@ const AdminProfile: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit" disabled={isSaving}>
+                <Button type="submit" disabled={isSaving || specialties.length === 0}>
                   {isSaving ? "Salvando..." : "Salvar Áreas"}
                 </Button>
               </CardFooter>
@@ -374,7 +404,7 @@ const AdminProfile: React.FC = () => {
                   <Label htmlFor="bio">Sua biografia</Label>
                   <Textarea
                     id="bio"
-                    value={bio}
+                    value={bio || ""}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Escreva sobre sua formação, experiência e áreas de especialização..."
                     className="min-h-[200px]"
