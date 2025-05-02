@@ -1,6 +1,5 @@
 
 import { Toaster } from "@/components/ui/toaster";
-// Remove the Sonner import as it might be causing conflicts
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -26,31 +25,34 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+// Convert App to a proper React functional component
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
       <AdminAuthProvider>
-        <Toaster />
-        <Router>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/como-funciona" element={<HowItWorks />} />
-            <Route path="/contato" element={<Contact />} />
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin" element={<LawyerLayout />}>
-              <Route path="dashboard" element={<LawyerDashboard />} />
-              <Route path="planos" element={<LawyerPlans />} />
-              <Route path="perfil" element={<LawyerProfile />} />
-              <Route path="leads" element={<LawyerLeads />} />
-              <Route path="aprovacoes" element={<AdminApprovals />} />
-            </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
+        <TooltipProvider>
+          <Toaster />
+          <Router>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/como-funciona" element={<HowItWorks />} />
+              <Route path="/contato" element={<Contact />} />
+              <Route path="/admin" element={<AdminLogin />} />
+              <Route path="/admin" element={<LawyerLayout />}>
+                <Route path="dashboard" element={<LawyerDashboard />} />
+                <Route path="planos" element={<LawyerPlans />} />
+                <Route path="perfil" element={<LawyerProfile />} />
+                <Route path="leads" element={<LawyerLeads />} />
+                <Route path="aprovacoes" element={<AdminApprovals />} />
+              </Route>
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </TooltipProvider>
       </AdminAuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+};
 
 export default App;
