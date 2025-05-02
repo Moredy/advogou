@@ -28,9 +28,12 @@ const Header: React.FC = () => {
               </Link>
             </nav>
             
-            {/* Lawyer login button */}
+            {/* Lawyer login button - updated to be more subtle */}
             <Link to="/login">
-              <Button variant="outline" className="border-juris-accent text-juris-accent hover:bg-juris-accent hover:text-white">
+              <Button 
+                variant="ghost" 
+                className="text-juris-text hover:text-white hover:bg-transparent border border-white/20"
+              >
                 Sou Advogado
               </Button>
             </Link>
