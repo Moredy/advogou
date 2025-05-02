@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -14,6 +15,9 @@ interface ContactInfo {
   name: string;
   phone: string;
 }
+
+// Lista de emails administrativos - para evitar que leads sejam direcionados a administradores
+const adminEmails = ['admin@jurisquick.com'];
 
 const OnboardingForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -143,12 +147,13 @@ const OnboardingForm: React.FC = () => {
       // Encontrar um advogado para o lead
       const areaName = getAreaName();
       
-      // Obter um advogado da área especializada
+      // Obter um advogado da área especializada, excluindo contas admin
       const { data: lawyers, error: lawyersError } = await supabase
         .from('lawyers')
-        .select('id')
+        .select('id, email')
         .eq('specialty', areaName.toLowerCase())
         .eq('subscription_active', true)
+        .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
         .limit(1);
 
       if (lawyersError) {
@@ -159,11 +164,12 @@ const OnboardingForm: React.FC = () => {
       let selectedLawyerId: string;
 
       if (!lawyers || lawyers.length === 0) {
-        // Não encontrou advogado especialista, tenta encontrar qualquer advogado ativo
+        // Não encontrou advogado especialista, tenta encontrar qualquer advogado ativo, excluindo admin
         const { data: anyLawyers, error: anyLawyersError } = await supabase
           .from('lawyers')
-          .select('id')
+          .select('id, email')
           .eq('subscription_active', true)
+          .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
           .limit(1);
           
         if (anyLawyersError) {
