@@ -7,8 +7,10 @@ import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+type PlanType = "free" | "basic" | "premium" | "enterprise";
+
 type Plan = {
-  id: string;
+  id: PlanType;
   name: string;
   price: number;
   description: string;
@@ -23,7 +25,7 @@ const AdminPlans: React.FC = () => {
   const { lawyer, user } = useAdminAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
-  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<PlanType | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // Carregar o plano atual do advogado
@@ -56,7 +58,7 @@ const AdminPlans: React.FC = () => {
       }
       
       if (data) {
-        setCurrentPlan(data.plan_type);
+        setCurrentPlan(data.plan_type as PlanType || null);
         setIsInitialLoading(false);
       }
     } catch (error) {
@@ -125,7 +127,7 @@ const AdminPlans: React.FC = () => {
     }
   ];
 
-  const handleSubscribe = async (planId: string) => {
+  const handleSubscribe = async (planId: PlanType) => {
     if (!user) return;
     
     setLoading(planId);
@@ -135,13 +137,16 @@ const AdminPlans: React.FC = () => {
       const { error } = await supabase
         .from('lawyers')
         .update({
-          plan_type: planId as "free" | "basic" | "premium" | "enterprise",
+          plan_type: planId,
           subscription_active: true,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao atualizar plano:', error);
+        throw error;
+      }
 
       setCurrentPlan(planId);
       

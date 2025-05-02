@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User, AuthError } from "@supabase/supabase-js";
@@ -9,6 +8,8 @@ type Specialty = {
   specialty: string;
 };
 
+type PlanType = "free" | "basic" | "premium" | "enterprise" | null;
+
 type Lawyer = {
   id: string;
   name: string;
@@ -16,7 +17,7 @@ type Lawyer = {
   oab_number: string;
   specialty: string; // Keep for backward compatibility
   specialties: Specialty[]; // New field for multiple specialties
-  plan_type: "basic" | "premium" | "enterprise" | null;
+  plan_type: PlanType;
   subscription_active: boolean;
   bio: string | null;
   phone: string | null;
