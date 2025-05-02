@@ -14,16 +14,25 @@ const LawyerLayout: React.FC = () => {
 
   // Lista de emails administrativos
   const adminEmails = ['admin@jurisquick.com'];
+  const isAdmin = adminEmails.includes(user?.email || '');
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/admin");
-    } else if (location.pathname === '/admin/aprovacoes') {
-      // Check if user email is in the admin list
-      const isAdmin = adminEmails.includes(user?.email || '');
-      
-      if (!isAdmin) {
-        // Notificar o usuário e redirecionar
+    } else {
+      // Redirecionar admins tentando acessar páginas que não deveriam
+      if (isAdmin) {
+        const forbiddenPaths = ['/admin/planos', '/admin/perfil', '/admin/leads'];
+        if (forbiddenPaths.some(path => location.pathname.startsWith(path))) {
+          toast({
+            title: "Acesso restrito",
+            description: "Esta página não está disponível para administradores.",
+            variant: "destructive"
+          });
+          navigate("/admin/dashboard");
+        }
+      } else if (location.pathname === '/admin/aprovacoes') {
+        // Não-admins tentando acessar página de aprovações
         toast({
           title: "Acesso restrito",
           description: "Você não tem permissão para acessar essa página.",
@@ -32,7 +41,7 @@ const LawyerLayout: React.FC = () => {
         navigate("/admin/dashboard");
       }
     }
-  }, [isAuthenticated, navigate, location.pathname, user, toast]);
+  }, [isAuthenticated, navigate, location.pathname, user, toast, isAdmin]);
 
   if (!isAuthenticated) {
     return null;

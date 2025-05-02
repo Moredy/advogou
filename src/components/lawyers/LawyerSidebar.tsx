@@ -16,18 +16,22 @@ const LawyerSidebar: React.FC = () => {
     return location.pathname === path;
   };
 
-  // Lista base de itens do menu
-  const baseMenuItems = [
+  // Menu items for admins (only dashboard and approvals)
+  const adminMenuItems = [
+    { name: "Dashboard", path: "/admin/dashboard", icon: <Home size={20} /> },
+    { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> },
+  ];
+  
+  // Menu items for regular lawyers (dashboard, plans, profile, leads)
+  const lawyerMenuItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: <Home size={20} /> },
     { name: "Planos", path: "/admin/planos", icon: <CreditCard size={20} /> },
     { name: "Meu Perfil", path: "/admin/perfil", icon: <User size={20} /> },
     { name: "Leads Recebidos", path: "/admin/leads", icon: <MessageSquare size={20} /> },
   ];
   
-  // Adicionar item de validação de advogados apenas se for admin
-  const menuItems = isAdmin 
-    ? [...baseMenuItems, { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> }]
-    : baseMenuItems;
+  // Use appropriate menu items based on user role
+  const menuItems = isAdmin ? adminMenuItems : lawyerMenuItems;
 
   return (
     <div className="w-64 min-h-screen bg-juris-dark text-white">
