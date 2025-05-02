@@ -85,6 +85,7 @@ export type Database = {
           case_area: string
           client_email: string
           client_name: string
+          client_phone: string | null
           created_at: string
           description: string | null
           id: string
@@ -98,6 +99,7 @@ export type Database = {
           case_area: string
           client_email: string
           client_name: string
+          client_phone?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -111,6 +113,7 @@ export type Database = {
           case_area?: string
           client_email?: string
           client_name?: string
+          client_phone?: string | null
           created_at?: string
           description?: string | null
           id?: string

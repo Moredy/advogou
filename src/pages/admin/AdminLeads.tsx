@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,13 +9,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, Phone } from "lucide-react";
 
 type LeadStatus = "pending" | "contacted" | "converted" | "not_converted";
 
 type Lead = {
   id: string;
   client_name: string;
+  client_phone: string | null;
   case_area: string;
   created_at: string;
   description: string | null;
@@ -42,7 +42,7 @@ const AdminLeads: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Carregar os leads do Supabase
+  // Load leads from Supabase
   useEffect(() => {
     if (user) {
       fetchLeads();
@@ -50,8 +50,6 @@ const AdminLeads: React.FC = () => {
   }, [user]);
 
   const fetchLeads = async () => {
-    if (!user) return;
-
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -88,6 +86,22 @@ const AdminLeads: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR');
+  };
+
+  const formatPhone = (phone: string | null) => {
+    if (!phone) return "N/A";
+    
+    // Simple formatting for Brazilian phone numbers (just an example)
+    // Format: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
+    const digits = phone.replace(/\D/g, '');
+    
+    if (digits.length === 11) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    } else if (digits.length === 10) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    }
+    
+    return phone; // Return original if doesn't match expected formats
   };
 
   const getStatusLabel = (status: string) => {
@@ -273,6 +287,18 @@ const AdminLeads: React.FC = () => {
                           <span>{lead.case_area}</span>
                           <span>•</span>
                           <span>{formatDate(lead.created_at)}</span>
+                          {lead.client_phone && (
+                            <>
+                              <span>•</span>
+                              <a 
+                                href={`tel:${lead.client_phone}`} 
+                                className="flex items-center text-juris-accent hover:underline"
+                              >
+                                <Phone size={14} className="mr-1" />
+                                {formatPhone(lead.client_phone)}
+                              </a>
+                            </>
+                          )}
                         </div>
                       </div>
                       <Badge className={getStatusLabel(lead.status).color}>
@@ -381,6 +407,30 @@ const AdminLeads: React.FC = () => {
                     <span>•</span>
                     <span>{formatDate(leads.find(l => l.id === openLeadId)?.created_at || '')}</span>
                   </div>
+                  
+                  {leads.find(l => l.id === openLeadId)?.client_phone && (
+                    <div className="flex items-center text-sm mt-2">
+                      <Phone size={16} className="mr-2" />
+                      <a 
+                        href={`tel:${leads.find(l => l.id === openLeadId)?.client_phone}`}
+                        className="text-juris-accent hover:underline"
+                      >
+                        {formatPhone(leads.find(l => l.id === openLeadId)?.client_phone || '')}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {leads.find(l => l.id === openLeadId)?.client_email && (
+                    <div className="text-sm mt-1">
+                      <span className="text-muted-foreground">Email: </span>
+                      <a 
+                        href={`mailto:${leads.find(l => l.id === openLeadId)?.client_email}`}
+                        className="text-juris-accent hover:underline"
+                      >
+                        {leads.find(l => l.id === openLeadId)?.client_email}
+                      </a>
+                    </div>
+                  )}
                 </div>
                 
                 <Badge className={getStatusLabel(leads.find(l => l.id === openLeadId)?.status || "").color}>
