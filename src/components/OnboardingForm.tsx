@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -5,10 +6,10 @@ import ResultMessage from './ResultMessage';
 import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface ContactInfo {
   name: string;
@@ -25,6 +26,7 @@ const OnboardingForm: React.FC = () => {
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lawyerId, setLawyerId] = useState<string | null>(null);
+  const [noLawyersAvailable, setNoLawyersAvailable] = useState(false);
   const { toast } = useToast();
   
   const contactForm = useForm<ContactInfo>({
@@ -141,6 +143,7 @@ const OnboardingForm: React.FC = () => {
   const handleContactSubmit = async (data: ContactInfo) => {
     setIsSubmitting(true);
     setContactInfo(data);
+    setNoLawyersAvailable(false); // Reset no lawyers available state
     
     try {
       // Encontrar um advogado para o lead
@@ -181,6 +184,8 @@ const OnboardingForm: React.FC = () => {
         }
         
         if (!anyLawyers || anyLawyers.length === 0) {
+          // Nova lógica: mostrar mensagem que não há advogados disponíveis
+          setNoLawyersAvailable(true);
           throw new Error('Nenhum advogado disponível no sistema');
         }
         
@@ -203,11 +208,14 @@ const OnboardingForm: React.FC = () => {
     } catch (error) {
       console.error('Erro ao processar lead:', error);
       
-      toast({
-        title: "Erro",
-        description: "Não foi possível encontrar um advogado. Tente novamente.",
-        variant: "destructive"
-      });
+      // Se o erro for de "nenhum advogado disponível", exibimos um alerta específico
+      if (!noLawyersAvailable) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível encontrar um advogado. Tente novamente.",
+          variant: "destructive"
+        });
+      }
       
       // Mesmo com erro, avançamos para a mensagem final
       setCurrentStep(steps.length);
@@ -322,6 +330,7 @@ Obrigado.`;
     setTechnicalArea('');
     setContactInfo(null);
     setLawyerId(null);
+    setNoLawyersAvailable(false);
     contactForm.reset();
   };
 
@@ -448,14 +457,37 @@ Obrigado.`;
       )}
 
       {currentStep === steps.length && contactInfo && (
-        <ResultMessage
-          message={generateMessage()}
-          areaExpert={getAreaName()}
-          contactInfo={contactInfo}
-          isActive={true}
-          onRestart={handleRestart}
-          lawyerId={lawyerId}
-        />
+        <>
+          {noLawyersAvailable && (
+            <Alert variant="warning" className="mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Não há advogados disponíveis</AlertTitle>
+              <AlertDescription>
+                Infelizmente não temos advogados aprovados disponíveis para a área de {getAreaName()} no momento. 
+                Um administrador foi notificado e entrará em contato em breve.
+              </AlertDescription>
+            </Alert>
+          )}
+          <ResultMessage
+            message={generateMessage()}
+            areaExpert={getAreaName()}
+            contactInfo={contactInfo}
+            isActive={!noLawyersAvailable}
+            onRestart={handleRestart}
+            lawyerId={lawyerId}
+          />
+          
+          {noLawyersAvailable && (
+            <div className="mt-6">
+              <button
+                onClick={handleRestart}
+                className="w-full py-3 px-4 bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded-md transition-all"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          )}
+        </>
       )}
     </motion.div>
   );
