@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { Users, MessageSquare, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, MessageSquare, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { LawyerStatus } from "@/types/lawyer"; // Import LawyerStatus type
 
 type LeadStatus = "pending" | "contacted" | "converted" | "not_converted";
@@ -30,9 +30,10 @@ type Lead = {
 const adminEmails = ['admin@jurisquick.com'];
 
 const AdminDashboard: React.FC = () => {
-  const { lawyer, user } = useAdminAuth();
+  const { lawyer, user, refreshLawyerProfile } = useAdminAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [requestingReeval, setRequestingReeval] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     leadsReceived: 0,
     leadsConvertidos: 0,
@@ -44,6 +45,7 @@ const AdminDashboard: React.FC = () => {
   const isAdmin = lawyer?.email && adminEmails.includes(lawyer.email);
   // Fix the TypeScript error by checking the status properly, ensuring it's type-safe
   const isPending = lawyer?.status === "pending";
+  const isRejected = lawyer?.status === "rejected";
 
   useEffect(() => {
     if (user) {
@@ -105,6 +107,37 @@ const AdminDashboard: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const requestReevaluation = async () => {
+    if (!user) return;
+    
+    setRequestingReeval(true);
+    try {
+      const { error } = await supabase
+        .from('lawyers')
+        .update({ status: 'pending' })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      await refreshLawyerProfile();
+      
+      toast({
+        title: "Solicitação enviada",
+        description: "Sua solicitação de reavaliação foi enviada com sucesso. Seu perfil será analisado novamente.",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Erro ao solicitar reavaliação:', error);
+      toast({
+        title: "Erro ao solicitar reavaliação",
+        description: "Não foi possível processar sua solicitação. Tente novamente mais tarde.",
+        variant: "destructive"
+      });
+    } finally {
+      setRequestingReeval(false);
     }
   };
 
@@ -178,6 +211,37 @@ const AdminDashboard: React.FC = () => {
             Sua conta está em análise e será avaliada por um especialista em até 24 horas. 
             Para aumentar suas chances de aprovação, mantenha seu perfil o mais completo possível,
             incluindo especialidades, biografia profissional e informações de contato.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {!isAdmin && isRejected && (
+        <Alert variant="destructive">
+          <AlertTitle>Cadastro rejeitado</AlertTitle>
+          <AlertDescription className="space-y-4">
+            <p>
+              Seu cadastro foi analisado e não foi aprovado. Isto pode ocorrer por diversos motivos, 
+              como informações incompletas ou inconsistentes. Sugerimos revisar seus dados e certificar-se 
+              de que todas as informações estejam corretas e completas.
+            </p>
+            <Button 
+              onClick={requestReevaluation} 
+              variant="outline" 
+              className="mt-2 bg-white"
+              disabled={requestingReeval}
+            >
+              {requestingReeval ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" /> 
+                  Solicitar nova avaliação
+                </>
+              )}
+            </Button>
           </AlertDescription>
         </Alert>
       )}
