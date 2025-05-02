@@ -47,7 +47,10 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
         .eq('subscription_active', true)
         .limit(1);
 
-      if (lawyersError) throw lawyersError;
+      if (lawyersError) {
+        console.error('Erro ao buscar advogados:', lawyersError);
+        throw lawyersError;
+      }
 
       if (!lawyers || lawyers.length === 0) {
         console.log('Nenhum advogado encontrado para a área:', areaExpert);
@@ -58,21 +61,32 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
           .eq('subscription_active', true)
           .limit(1);
           
-        if (anyLawyersError) throw anyLawyersError;
+        if (anyLawyersError) {
+          console.error('Erro ao buscar qualquer advogado:', anyLawyersError);
+          throw anyLawyersError;
+        }
         
         if (!anyLawyers || anyLawyers.length === 0) {
+          console.error('Nenhum advogado disponível no sistema');
           throw new Error('Nenhum advogado disponível no sistema');
         }
         
+        console.log('Usando advogado genérico:', anyLawyers[0].id);
         // Usar qualquer advogado ativo
         await createLead(anyLawyers[0].id);
       } else {
+        console.log('Usando advogado especialista:', lawyers[0].id);
         // Usar advogado especialista
         await createLead(lawyers[0].id);
       }
 
       // Abrir o WhatsApp
       window.open(whatsappUrl, '_blank');
+      
+      toast({
+        title: "Sucesso!",
+        description: "Seu contato foi encaminhado para um advogado especialista.",
+      });
     } catch (error) {
       console.error('Erro ao processar lead:', error);
       toast({
@@ -89,28 +103,41 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
   };
 
   const createLead = async (lawyerId: string) => {
-    // Gerar um nome e email fictício para o lead (na prática, você coletaria isso do usuário)
-    const clientName = `Cliente ${new Date().getTime()}`;
-    const clientEmail = `cliente_${new Date().getTime()}@example.com`;
-    
-    const { error } = await supabase
-      .from('leads')
-      .insert({
+    try {
+      // Gerar um nome e email fictício para o lead (na prática, você coletaria isso do usuário)
+      const clientName = `Cliente ${new Date().getTime()}`;
+      const clientEmail = `cliente_${new Date().getTime()}@example.com`;
+      
+      console.log('Criando lead para advogado:', lawyerId, 'com dados:', {
         lawyer_id: lawyerId,
         client_name: clientName,
         client_email: clientEmail,
         case_area: areaExpert.toLowerCase(),
-        description: message,
-        status: 'pending'
+        description: message
       });
-    
-    if (error) throw error;
-    
-    console.log('Lead criado com sucesso para o advogado:', lawyerId);
-    toast({
-      title: "Sucesso!",
-      description: "Seu contato foi encaminhado para um advogado especialista.",
-    });
+      
+      const { data, error } = await supabase
+        .from('leads')
+        .insert({
+          lawyer_id: lawyerId,
+          client_name: clientName,
+          client_email: clientEmail,
+          case_area: areaExpert.toLowerCase(),
+          description: message,
+          status: 'pending'
+        })
+        .select();
+      
+      if (error) {
+        console.error('Erro ao criar lead:', error);
+        throw error;
+      }
+      
+      console.log('Lead criado com sucesso:', data);
+    } catch (error) {
+      console.error('Erro na função createLead:', error);
+      throw error;
+    }
   };
 
   return (
