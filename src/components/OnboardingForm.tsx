@@ -3,11 +3,28 @@ import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
 import ResultMessage from './ResultMessage';
+import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
+
+interface ContactInfo {
+  name: string;
+  phone: string;
+}
 
 const OnboardingForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [technicalArea, setTechnicalArea] = useState(''); 
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  
+  const contactForm = useForm<ContactInfo>({
+    defaultValues: {
+      name: '',
+      phone: ''
+    }
+  });
   
   // Definição dos passos com perguntas mais acessíveis
   const steps = [
@@ -84,8 +101,12 @@ const OnboardingForm: React.FC = () => {
         { id: 'media', label: 'Urgente - Preciso resolver esta semana', value: 'media' },
         { id: 'baixa', label: 'Não é urgente - Estou apenas pesquisando', value: 'baixa' }
       ]
+    },
+    {
+      id: 'contact',
+      question: 'Para conectá-lo com um advogado, precisamos de alguns dados',
+      type: 'form'
     }
-    // Contact preference question removed
   ];
 
   const handleSelectOption = (option: Option) => {
@@ -107,6 +128,11 @@ const OnboardingForm: React.FC = () => {
     } else {
       setCurrentStep(steps.length);
     }
+  };
+
+  const handleContactSubmit = (data: ContactInfo) => {
+    setContactInfo(data);
+    setCurrentStep(steps.length);
   };
 
   const getAreaName = (): string => {
@@ -168,7 +194,9 @@ const OnboardingForm: React.FC = () => {
       ? 'urgente' 
       : 'não urgente';
 
-    return `Olá, encontrei seu contato pelo JurisQuick.
+    const name = contactInfo?.name || '';
+
+    return `Olá, me chamo ${name} e encontrei seu contato pelo JurisQuick.
 
 ${problemDesc.charAt(0).toUpperCase() + problemDesc.slice(1)}.
 A situação é ${urgencia} para mim.
@@ -182,6 +210,8 @@ Obrigado.`;
     setCurrentStep(0);
     setSelections({});
     setTechnicalArea('');
+    setContactInfo(null);
+    contactForm.reset();
   };
 
   return (
@@ -218,30 +248,78 @@ Obrigado.`;
             {steps[currentStep].question}
           </h3>
           
-          <div className="space-y-3">
-            {/* Renderizar opções estáticas ou dinâmicas conforme o passo */}
-            {steps[currentStep].options ? (
-              steps[currentStep].options.map((option) => (
-                <button
-                  key={option.id}
-                  className="w-full text-left justify-start py-6 px-4 bg-white bg-opacity-5 hover:bg-opacity-10 border border-white border-opacity-10 text-juris-text rounded-md transition-all"
-                  onClick={() => handleSelectOption(option)}
+          {(steps[currentStep] as any).type === 'form' ? (
+            <Form {...contactForm}>
+              <form onSubmit={contactForm.handleSubmit(handleContactSubmit)} className="space-y-6">
+                <FormField
+                  control={contactForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Nome completo</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Digite seu nome completo" 
+                          {...field} 
+                          className="bg-white bg-opacity-5 border-white border-opacity-20 text-white" 
+                          required
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={contactForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Telefone com WhatsApp</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="(00) 00000-0000" 
+                          {...field} 
+                          className="bg-white bg-opacity-5 border-white border-opacity-20 text-white" 
+                          required
+                          type="tel"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="submit" 
+                  className="w-full bg-juris-accent hover:bg-opacity-90 text-white" 
                 >
-                  {option.label}
-                </button>
-              ))
-            ) : steps[currentStep].getDynamicOptions ? (
-              steps[currentStep].getDynamicOptions(selections).map((option) => (
-                <button
-                  key={option.id}
-                  className="w-full text-left justify-start py-6 px-4 bg-white bg-opacity-5 hover:bg-opacity-10 border border-white border-opacity-10 text-juris-text rounded-md transition-all"
-                  onClick={() => handleSelectOption(option)}
-                >
-                  {option.label}
-                </button>
-              ))
-            ) : null}
-          </div>
+                  Encontrar advogado
+                </Button>
+              </form>
+            </Form>
+          ) : (
+            <div className="space-y-3">
+              {/* Renderizar opções estáticas ou dinâmicas conforme o passo */}
+              {steps[currentStep].options ? (
+                steps[currentStep].options.map((option) => (
+                  <button
+                    key={option.id}
+                    className="w-full text-left justify-start py-6 px-4 bg-white bg-opacity-5 hover:bg-opacity-10 border border-white border-opacity-10 text-juris-text rounded-md transition-all"
+                    onClick={() => handleSelectOption(option)}
+                  >
+                    {option.label}
+                  </button>
+                ))
+              ) : steps[currentStep].getDynamicOptions ? (
+                steps[currentStep].getDynamicOptions(selections).map((option) => (
+                  <button
+                    key={option.id}
+                    className="w-full text-left justify-start py-6 px-4 bg-white bg-opacity-5 hover:bg-opacity-10 border border-white border-opacity-10 text-juris-text rounded-md transition-all"
+                    onClick={() => handleSelectOption(option)}
+                  >
+                    {option.label}
+                  </button>
+                ))
+              ) : null}
+            </div>
+          )}
           
           {/* Mostrar área técnica para debug (remover em produção) */}
           {technicalArea && currentStep > 0 && (
@@ -252,10 +330,11 @@ Obrigado.`;
         </div>
       )}
 
-      {currentStep === steps.length && (
+      {currentStep === steps.length && contactInfo && (
         <ResultMessage
           message={generateMessage()}
           areaExpert={getAreaName()}
+          contactInfo={contactInfo}
           isActive={true}
           onRestart={handleRestart}
         />

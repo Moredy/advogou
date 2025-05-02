@@ -6,9 +6,15 @@ import { Link, Copy, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ContactInfo {
+  name: string;
+  phone: string;
+}
+
 interface ResultMessageProps {
   message: string;
   areaExpert: string;
+  contactInfo: ContactInfo;
   isActive: boolean;
   onRestart: () => void;
 }
@@ -16,6 +22,7 @@ interface ResultMessageProps {
 const ResultMessage: React.FC<ResultMessageProps> = ({
   message,
   areaExpert,
+  contactInfo,
   isActive,
   onRestart
 }) => {
@@ -24,7 +31,8 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
 
   if (!isActive) return null;
 
-  const phoneNumber = "5511999999999"; // Substitua pelo número do WhatsApp
+  // Usar o telefone fornecido pelo usuário ou um número padrão como fallback
+  const phoneNumber = contactInfo.phone.replace(/\D/g, '') || "5511999999999";
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
   
@@ -104,14 +112,16 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
 
   const createLead = async (lawyerId: string) => {
     try {
-      // Gerar um nome e email fictício para o lead (na prática, você coletaria isso do usuário)
-      const clientName = `Cliente ${new Date().getTime()}`;
+      // Usar o nome e telefone fornecidos pelo usuário
+      const clientName = contactInfo.name;
+      const clientPhone = contactInfo.phone;
       const clientEmail = `cliente_${new Date().getTime()}@example.com`;
       
       console.log('Criando lead para advogado:', lawyerId, 'com dados:', {
         lawyer_id: lawyerId,
         client_name: clientName,
         client_email: clientEmail,
+        client_phone: clientPhone,
         case_area: areaExpert.toLowerCase(),
         description: message
       });
@@ -122,6 +132,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
           lawyer_id: lawyerId,
           client_name: clientName,
           client_email: clientEmail,
+          client_phone: clientPhone,
           case_area: areaExpert.toLowerCase(),
           description: message,
           status: 'pending'
