@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +35,7 @@ const AdminProfile: React.FC = () => {
   // Atualiza os dados quando o advogado for carregado
   useEffect(() => {
     if (lawyer) {
+      console.log("Atualizando formulário com dados do advogado:", lawyer);
       setPersonalInfo({
         name: lawyer.name || "",
         email: lawyer.email || "",
@@ -56,6 +58,7 @@ const AdminProfile: React.FC = () => {
     if (!user) return;
     
     setIsSaving(true);
+    console.log("Salvando informações pessoais:", personalInfo);
     
     try {
       const { error } = await supabase
@@ -71,6 +74,7 @@ const AdminProfile: React.FC = () => {
         
       if (error) throw error;
       
+      console.log("Informações pessoais salvas com sucesso!");
       toast({
         title: "Perfil atualizado",
         description: "Suas informações foram atualizadas com sucesso.",
@@ -139,6 +143,7 @@ const AdminProfile: React.FC = () => {
     if (!user) return;
     
     setIsSaving(true);
+    console.log("Salvando biografia:", bio);
     
     try {
       const { error } = await supabase
@@ -151,6 +156,7 @@ const AdminProfile: React.FC = () => {
         
       if (error) throw error;
       
+      console.log("Biografia salva com sucesso!");
       toast({
         title: "Biografia atualizada",
         description: "Sua biografia foi atualizada com sucesso.",

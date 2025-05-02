@@ -11,33 +11,39 @@ export type Database = {
     Tables: {
       lawyers: {
         Row: {
+          bio: string | null
           created_at: string
           email: string
           id: string
           name: string
           oab_number: string
+          phone: string | null
           plan_type: string | null
           specialty: string
           subscription_active: boolean | null
           updated_at: string
         }
         Insert: {
+          bio?: string | null
           created_at?: string
           email: string
           id: string
           name: string
           oab_number: string
+          phone?: string | null
           plan_type?: string | null
           specialty: string
           subscription_active?: boolean | null
           updated_at?: string
         }
         Update: {
+          bio?: string | null
           created_at?: string
           email?: string
           id?: string
           name?: string
           oab_number?: string
+          phone?: string | null
           plan_type?: string | null
           specialty?: string
           subscription_active?: boolean | null

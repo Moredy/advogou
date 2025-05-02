@@ -12,8 +12,8 @@ type Lawyer = {
   specialty: string;
   plan_type: "basic" | "premium" | "enterprise" | null;
   subscription_active: boolean;
-  bio?: string;
-  phone?: string;
+  bio: string | null;
+  phone: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -103,6 +103,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Função para buscar o perfil do advogado
   const fetchLawyerProfile = async (userId: string) => {
     try {
+      console.log("Buscando perfil do advogado para o ID:", userId);
       const { data, error } = await supabase
         .from('lawyers')
         .select('*')
@@ -114,6 +115,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return;
       }
 
+      console.log("Perfil do advogado encontrado:", data);
       setLawyer(data as Lawyer);
     } catch (error) {
       console.error("Erro ao buscar perfil do advogado:", error);
