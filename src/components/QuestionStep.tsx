@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 
 export interface Option {
   id: string;
   label: string;
   value: string;
+  technicalArea?: string;
 }
 
 interface QuestionStepProps {
@@ -28,14 +28,13 @@ const QuestionStep: React.FC<QuestionStepProps> = ({
       <h3 className="text-xl md:text-2xl font-medium mb-6 text-center">{question}</h3>
       <div className="space-y-3">
         {options.map((option) => (
-          <Button
+          <button
             key={option.id}
-            variant="outline"
-            className="w-full text-left justify-start py-6 bg-white bg-opacity-5 hover:bg-opacity-10 border-white border-opacity-10 text-juris-text"
+            className="w-full text-left justify-start py-6 px-4 bg-white bg-opacity-5 hover:bg-opacity-10 border border-white border-opacity-10 text-juris-text rounded-md transition-all"
             onClick={() => onSelectOption(option)}
           >
             {option.label}
-          </Button>
+          </button>
         ))}
       </div>
     </div>

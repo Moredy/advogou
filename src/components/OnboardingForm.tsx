@@ -7,19 +7,65 @@ import ResultMessage from './ResultMessage';
 const OnboardingForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState<Record<string, string>>({});
+  const [technicalArea, setTechnicalArea] = useState(''); 
   
-  // Definição dos passos
+  // Definição dos passos com perguntas mais acessíveis
   const steps = [
     {
-      id: 'area',
-      question: 'Qual área do direito você precisa de ajuda?',
+      id: 'problema',
+      question: 'Qual problema você está enfrentando?',
       options: [
-        { id: 'civil', label: 'Direito Civil', value: 'civil' },
-        { id: 'trabalhista', label: 'Direito Trabalhista', value: 'trabalhista' },
-        { id: 'consumidor', label: 'Direito do Consumidor', value: 'consumidor' },
-        { id: 'familia', label: 'Direito de Família', value: 'familia' },
-        { id: 'imobiliario', label: 'Direito Imobiliário', value: 'imobiliario' }
+        { id: 'trabalho', label: 'Problema no trabalho', value: 'trabalho', technicalArea: 'trabalhista' },
+        { id: 'divida', label: 'Dívidas ou cobranças indevidas', value: 'divida', technicalArea: 'consumidor' },
+        { id: 'familia', label: 'Questões familiares (divórcio, guarda de filhos)', value: 'familia', technicalArea: 'familia' },
+        { id: 'imovel', label: 'Problemas com imóvel (aluguel, compra)', value: 'imovel', technicalArea: 'imobiliario' },
+        { id: 'acidente', label: 'Acidente ou dano sofrido', value: 'acidente', technicalArea: 'civil' }
       ]
+    },
+    {
+      id: 'detalhe',
+      question: 'Pode nos dar mais detalhes?',
+      getDynamicOptions: (selections: Record<string, string>) => {
+        switch(selections.problema) {
+          case 'trabalho':
+            return [
+              { id: 'demissao', label: 'Fui demitido injustamente', value: 'demissao' },
+              { id: 'salario', label: 'Não recebi salário ou benefícios', value: 'salario' },
+              { id: 'assedio', label: 'Sofri assédio no trabalho', value: 'assedio' },
+              { id: 'outro_trab', label: 'Outro problema trabalhista', value: 'outro_trab' }
+            ];
+          case 'divida':
+            return [
+              { id: 'cobranca', label: 'Cobrança de dívida que não fiz', value: 'cobranca' },
+              { id: 'nome_sujo', label: 'Meu nome está no SPC/Serasa injustamente', value: 'nome_sujo' },
+              { id: 'produto', label: 'Comprei um produto com defeito', value: 'produto' },
+              { id: 'outro_cons', label: 'Outro problema de consumo', value: 'outro_cons' }
+            ];
+          case 'familia':
+            return [
+              { id: 'divorcio', label: 'Preciso de divórcio', value: 'divorcio' },
+              { id: 'pensao', label: 'Questões de pensão alimentícia', value: 'pensao' },
+              { id: 'guarda', label: 'Disputa pela guarda dos filhos', value: 'guarda' },
+              { id: 'outro_fam', label: 'Outra questão familiar', value: 'outro_fam' }
+            ];
+          case 'imovel':
+            return [
+              { id: 'aluguel', label: 'Problemas com contrato de aluguel', value: 'aluguel' },
+              { id: 'condominio', label: 'Conflitos de condomínio', value: 'condominio' },
+              { id: 'compra', label: 'Problemas na compra/venda de imóvel', value: 'compra' },
+              { id: 'outro_imob', label: 'Outro problema imobiliário', value: 'outro_imob' }
+            ];
+          case 'acidente':
+            return [
+              { id: 'transito', label: 'Acidente de trânsito', value: 'transito' },
+              { id: 'medico', label: 'Erro médico', value: 'medico' },
+              { id: 'queda', label: 'Queda ou acidente em estabelecimento', value: 'queda' },
+              { id: 'outro_acid', label: 'Outro tipo de acidente/dano', value: 'outro_acid' }
+            ];
+          default:
+            return [{ id: 'outro', label: 'Outro problema', value: 'outro' }];
+        }
+      }
     },
     {
       id: 'urgencia',
@@ -44,10 +90,16 @@ const OnboardingForm: React.FC = () => {
   const handleSelectOption = (option: Option) => {
     const step = steps[currentStep];
     
+    // Armazenar seleção do usuário
     setSelections(prev => ({
       ...prev,
       [step.id]: option.value
     }));
+    
+    // Se for o primeiro passo, armazenar a área técnica correspondente
+    if (step.id === 'problema' && 'technicalArea' in option) {
+      setTechnicalArea(option.technicalArea as string);
+    }
     
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -57,13 +109,48 @@ const OnboardingForm: React.FC = () => {
   };
 
   const getAreaName = (): string => {
-    const areaValue = selections.area;
-    const areaOption = steps[0].options.find(opt => opt.value === areaValue);
-    return areaOption?.label || 'Direito';
+    // Mapeamento das áreas técnicas para nomes amigáveis
+    const areaNames: Record<string, string> = {
+      'trabalhista': 'Direito Trabalhista',
+      'consumidor': 'Direito do Consumidor',
+      'familia': 'Direito de Família',
+      'imobiliario': 'Direito Imobiliário',
+      'civil': 'Direito Civil'
+    };
+    
+    return areaNames[technicalArea] || 'Direito';
+  };
+
+  const getProblemDescription = (): string => {
+    // Obter descrição do problema baseado nas seleções
+    const problema = selections.problema;
+    const detalhe = selections.detalhe;
+    
+    let descricao = '';
+    
+    // Mapeamento de problemas para descrições mais detalhadas
+    const problemaDescricoes: Record<string, string> = {
+      'trabalho': 'um problema trabalhista',
+      'divida': 'uma questão relacionada a dívidas ou consumo',
+      'familia': 'uma questão familiar',
+      'imovel': 'um problema imobiliário',
+      'acidente': 'um acidente ou dano sofrido'
+    };
+    
+    descricao = problemaDescricoes[problema] || 'uma questão jurídica';
+    
+    // Adicionar detalhes específicos se disponíveis
+    if (detalhe) {
+      // Poderíamos adicionar mais detalhes específicos aqui se necessário
+      descricao += ` (${detalhe})`;
+    }
+    
+    return descricao;
   };
 
   const generateMessage = (): string => {
     const area = getAreaName();
+    const problemDesc = getProblemDescription();
     const urgencia = selections.urgencia === 'alta' 
       ? 'muito urgente' 
       : selections.urgencia === 'media' 
@@ -77,7 +164,7 @@ const OnboardingForm: React.FC = () => {
 
     return `Olá, encontrei seu contato pelo JurisQuick.
 
-Estou precisando de ajuda com um caso de ${area}.
+Estou com ${problemDesc}.
 A situação é ${urgencia} para mim.
 Prefiro ser contatado por ${contato}.
 
@@ -89,6 +176,7 @@ Obrigado.`;
   const handleRestart = () => {
     setCurrentStep(0);
     setSelections({});
+    setTechnicalArea('');
   };
 
   return (
@@ -119,15 +207,45 @@ Obrigado.`;
         )}
       </div>
 
-      {steps.map((step, index) => (
-        <QuestionStep
-          key={step.id}
-          question={step.question}
-          options={step.options}
-          onSelectOption={handleSelectOption}
-          isActive={index === currentStep}
-        />
-      ))}
+      {currentStep < steps.length && (
+        <div className="animate-fade-in step-transition">
+          <h3 className="text-xl md:text-2xl font-medium mb-6 text-center">
+            {steps[currentStep].question}
+          </h3>
+          
+          <div className="space-y-3">
+            {/* Renderizar opções estáticas ou dinâmicas conforme o passo */}
+            {steps[currentStep].options ? (
+              steps[currentStep].options.map((option) => (
+                <button
+                  key={option.id}
+                  className="w-full text-left justify-start py-6 px-4 bg-white bg-opacity-5 hover:bg-opacity-10 border border-white border-opacity-10 text-juris-text rounded-md transition-all"
+                  onClick={() => handleSelectOption(option)}
+                >
+                  {option.label}
+                </button>
+              ))
+            ) : steps[currentStep].getDynamicOptions ? (
+              steps[currentStep].getDynamicOptions(selections).map((option) => (
+                <button
+                  key={option.id}
+                  className="w-full text-left justify-start py-6 px-4 bg-white bg-opacity-5 hover:bg-opacity-10 border border-white border-opacity-10 text-juris-text rounded-md transition-all"
+                  onClick={() => handleSelectOption(option)}
+                >
+                  {option.label}
+                </button>
+              ))
+            ) : null}
+          </div>
+          
+          {/* Mostrar área técnica para debug (remover em produção) */}
+          {technicalArea && currentStep > 0 && (
+            <div className="mt-4 text-xs text-juris-text text-opacity-50">
+              <span className="opacity-50">Área técnica identificada:</span> {getAreaName()}
+            </div>
+          )}
+        </div>
+      )}
 
       {currentStep === steps.length && (
         <ResultMessage
