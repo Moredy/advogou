@@ -75,16 +75,8 @@ const OnboardingForm: React.FC = () => {
         { id: 'media', label: 'Urgente - Preciso resolver esta semana', value: 'media' },
         { id: 'baixa', label: 'Não é urgente - Estou apenas pesquisando', value: 'baixa' }
       ]
-    },
-    {
-      id: 'contato',
-      question: 'Como você prefere ser contactado pelo advogado?',
-      options: [
-        { id: 'whatsapp', label: 'WhatsApp', value: 'whatsapp' },
-        { id: 'telefone', label: 'Ligação telefônica', value: 'telefone' },
-        { id: 'email', label: 'E-mail', value: 'email' }
-      ]
     }
+    // Contact preference question removed
   ];
 
   const handleSelectOption = (option: Option) => {
@@ -156,17 +148,11 @@ const OnboardingForm: React.FC = () => {
       : selections.urgencia === 'media' 
       ? 'urgente' 
       : 'não urgente';
-    const contato = selections.contato === 'whatsapp' 
-      ? 'WhatsApp' 
-      : selections.contato === 'telefone' 
-      ? 'telefone' 
-      : 'e-mail';
 
     return `Olá, encontrei seu contato pelo JurisQuick.
 
 Estou com ${problemDesc}.
 A situação é ${urgencia} para mim.
-Prefiro ser contatado por ${contato}.
 
 Poderia me ajudar com algumas orientações iniciais, por favor?
 

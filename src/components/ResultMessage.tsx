@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Link } from 'lucide-react';
+import { Link, Copy } from 'lucide-react';
 
 interface ResultMessageProps {
   message: string;
@@ -45,7 +45,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
               onClick={copyToClipboard}
               className="text-juris-accent flex items-center text-sm"
             >
-              <Link size={16} className="mr-1" />
+              <Copy size={16} className="mr-1" />
               Copiar texto
             </button>
           </div>
