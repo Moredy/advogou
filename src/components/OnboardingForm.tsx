@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -7,6 +6,9 @@ import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from 'lucide-react';
 
 interface ContactInfo {
   name: string;
@@ -18,6 +20,9 @@ const OnboardingForm: React.FC = () => {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [technicalArea, setTechnicalArea] = useState(''); 
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lawyerId, setLawyerId] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const contactForm = useForm<ContactInfo>({
     defaultValues: {
@@ -130,9 +135,105 @@ const OnboardingForm: React.FC = () => {
     }
   };
 
-  const handleContactSubmit = (data: ContactInfo) => {
+  const handleContactSubmit = async (data: ContactInfo) => {
+    setIsSubmitting(true);
     setContactInfo(data);
-    setCurrentStep(steps.length);
+    
+    try {
+      // Encontrar um advogado para o lead
+      const areaName = getAreaName();
+      
+      // Obter um advogado da área especializada
+      const { data: lawyers, error: lawyersError } = await supabase
+        .from('lawyers')
+        .select('id')
+        .eq('specialty', areaName.toLowerCase())
+        .eq('subscription_active', true)
+        .limit(1);
+
+      if (lawyersError) {
+        console.error('Erro ao buscar advogados:', lawyersError);
+        throw lawyersError;
+      }
+
+      let selectedLawyerId: string;
+
+      if (!lawyers || lawyers.length === 0) {
+        // Não encontrou advogado especialista, tenta encontrar qualquer advogado ativo
+        const { data: anyLawyers, error: anyLawyersError } = await supabase
+          .from('lawyers')
+          .select('id')
+          .eq('subscription_active', true)
+          .limit(1);
+          
+        if (anyLawyersError) {
+          console.error('Erro ao buscar qualquer advogado:', anyLawyersError);
+          throw anyLawyersError;
+        }
+        
+        if (!anyLawyers || anyLawyers.length === 0) {
+          throw new Error('Nenhum advogado disponível no sistema');
+        }
+        
+        selectedLawyerId = anyLawyers[0].id;
+      } else {
+        selectedLawyerId = lawyers[0].id;
+      }
+
+      // Criar o lead
+      await createLead(selectedLawyerId, data, areaName);
+      setLawyerId(selectedLawyerId);
+      
+      // Avançar para o último passo
+      setCurrentStep(steps.length);
+      
+      toast({
+        title: "Advogado encontrado!",
+        description: "Um profissional foi notificado sobre sua solicitação.",
+      });
+    } catch (error) {
+      console.error('Erro ao processar lead:', error);
+      
+      toast({
+        title: "Erro",
+        description: "Não foi possível encontrar um advogado. Tente novamente.",
+        variant: "destructive"
+      });
+      
+      // Mesmo com erro, avançamos para a mensagem final
+      setCurrentStep(steps.length);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const createLead = async (lawyerId: string, data: ContactInfo, areaName: string) => {
+    try {
+      const message = generateMessage();
+      
+      const { data: leadData, error } = await supabase
+        .from('leads')
+        .insert({
+          lawyer_id: lawyerId,
+          client_name: data.name,
+          client_email: `cliente_${new Date().getTime()}@example.com`,
+          client_phone: data.phone,
+          case_area: areaName.toLowerCase(),
+          description: message,
+          status: 'pending'
+        })
+        .select();
+      
+      if (error) {
+        console.error('Erro ao criar lead:', error);
+        throw error;
+      }
+      
+      console.log('Lead criado com sucesso:', leadData);
+    } catch (error) {
+      console.error('Erro na função createLead:', error);
+      throw error;
+    }
   };
 
   const getAreaName = (): string => {
@@ -211,6 +312,7 @@ Obrigado.`;
     setSelections({});
     setTechnicalArea('');
     setContactInfo(null);
+    setLawyerId(null);
     contactForm.reset();
   };
 
@@ -288,15 +390,22 @@ Obrigado.`;
                 />
                 <Button 
                   type="submit" 
-                  className="w-full bg-juris-accent hover:bg-opacity-90 text-white" 
+                  className="w-full bg-juris-accent hover:bg-opacity-90 text-white"
+                  disabled={isSubmitting}
                 >
-                  Encontrar advogado
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      Buscando advogado...
+                    </>
+                  ) : (
+                    "Encontrar advogado"
+                  )}
                 </Button>
               </form>
             </Form>
           ) : (
             <div className="space-y-3">
-              {/* Renderizar opções estáticas ou dinâmicas conforme o passo */}
               {steps[currentStep].options ? (
                 steps[currentStep].options.map((option) => (
                   <button
@@ -321,7 +430,6 @@ Obrigado.`;
             </div>
           )}
           
-          {/* Mostrar área técnica para debug (remover em produção) */}
           {technicalArea && currentStep > 0 && (
             <div className="mt-4 text-xs text-juris-text text-opacity-50">
               <span className="opacity-50">Área técnica identificada:</span> {getAreaName()}
@@ -337,6 +445,7 @@ Obrigado.`;
           contactInfo={contactInfo}
           isActive={true}
           onRestart={handleRestart}
+          lawyerId={lawyerId}
         />
       )}
     </motion.div>
