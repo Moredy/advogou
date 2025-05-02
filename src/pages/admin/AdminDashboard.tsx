@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
@@ -6,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LawyerStatus } from "@/types/lawyer"; // Import LawyerStatus type
 
 type LeadStatus = "pending" | "contacted" | "converted" | "not_converted";
 
@@ -40,6 +42,7 @@ const AdminDashboard: React.FC = () => {
   const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
   
   const isAdmin = lawyer?.email && adminEmails.includes(lawyer.email);
+  // Fix the TypeScript error by checking the status properly, ensuring it's type-safe
   const isPending = lawyer?.status === "pending";
 
   useEffect(() => {
