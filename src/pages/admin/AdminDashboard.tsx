@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
@@ -96,7 +95,7 @@ const AdminDashboard: React.FC = () => {
       const pendingCount = lawyers.filter(l => l.status === 'pending').length;
       const rejectedCount = lawyers.filter(l => l.status === 'rejected').length;
 
-      // Contar planos ativos
+      // Contar planos ativos, excluindo o plano gratuito
       const activePlans = {
         free: lawyers.filter(l => l.plan_type === 'free' && l.subscription_active).length,
         basic: lawyers.filter(l => l.plan_type === 'basic' && l.subscription_active).length,
@@ -135,6 +134,12 @@ const AdminDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Calculate total active plans excluding the free plan
+  const totalActivePlans = 
+    stats.activePlans.basic + 
+    stats.activePlans.premium + 
+    stats.activePlans.enterprise;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -320,10 +325,10 @@ const AdminDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Object.values(stats.activePlans).reduce((sum, current) => sum + current, 0)}
+              {totalActivePlans}
             </div>
             <p className="text-xs text-muted-foreground">
-              Assinaturas ativas
+              Assinaturas pagas ativas
             </p>
           </CardContent>
         </Card>
