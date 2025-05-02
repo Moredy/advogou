@@ -28,6 +28,8 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
 }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [lawyerFound, setLawyerFound] = useState(false);
+  const [lawyerId, setLawyerId] = useState<string | null>(null);
 
   if (!isActive) return null;
 
@@ -44,7 +46,9 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
     });
   };
 
-  const handleWhatsAppClick = async () => {
+  const findLawyer = async () => {
+    if (lawyerFound) return; // Evitar múltiplas chamadas se já encontrou um advogado
+
     setIsLoading(true);
     try {
       // Obter um advogado aleatório da área de atuação
@@ -59,6 +63,8 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
         console.error('Erro ao buscar advogados:', lawyersError);
         throw lawyersError;
       }
+
+      let selectedLawyerId: string;
 
       if (!lawyers || lawyers.length === 0) {
         console.log('Nenhum advogado encontrado para a área:', areaExpert);
@@ -81,33 +87,39 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
         
         console.log('Usando advogado genérico:', anyLawyers[0].id);
         // Usar qualquer advogado ativo
-        await createLead(anyLawyers[0].id);
+        selectedLawyerId = anyLawyers[0].id;
       } else {
         console.log('Usando advogado especialista:', lawyers[0].id);
         // Usar advogado especialista
-        await createLead(lawyers[0].id);
+        selectedLawyerId = lawyers[0].id;
       }
 
-      // Abrir o WhatsApp
-      window.open(whatsappUrl, '_blank');
+      // Criar o lead
+      await createLead(selectedLawyerId);
+      
+      // Atualizar o estado para mostrar que o advogado foi encontrado
+      setLawyerFound(true);
+      setLawyerId(selectedLawyerId);
       
       toast({
-        title: "Sucesso!",
-        description: "Seu contato foi encaminhado para um advogado especialista.",
+        title: "Advogado encontrado!",
+        description: "Um advogado já foi notificado sobre sua solicitação.",
       });
     } catch (error) {
       console.error('Erro ao processar lead:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível processar seu pedido. Tente novamente.",
+        description: "Não foi possível encontrar um advogado. Tente novamente.",
         variant: "destructive"
       });
-      
-      // Ainda abrir o WhatsApp mesmo com erro
-      window.open(whatsappUrl, '_blank');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleWhatsAppClick = () => {
+    // Abrir o WhatsApp diretamente sem buscar advogado
+    window.open(whatsappUrl, '_blank');
   };
 
   const createLead = async (lawyerId: string) => {
@@ -176,20 +188,37 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
       </Card>
 
       <div className="space-y-4">
-        <Button 
-          className="w-full btn-primary relative"
-          onClick={handleWhatsAppClick}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 size={16} className="mr-2 animate-spin" />
-              Processando...
-            </>
-          ) : (
-            "Enviar mensagem via WhatsApp"
-          )}
-        </Button>
+        {!lawyerFound ? (
+          <Button 
+            className="w-full btn-primary relative"
+            onClick={findLawyer}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 size={16} className="mr-2 animate-spin" />
+                Procurando advogado...
+              </>
+            ) : (
+              "Encontrar advogado"
+            )}
+          </Button>
+        ) : (
+          <>
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md text-green-800 mb-4">
+              <p className="text-sm">
+                <strong>Advogado encontrado!</strong> Um profissional já foi notificado sobre sua solicitação e entrará em contato em breve.
+              </p>
+            </div>
+            
+            <Button 
+              className="w-full btn-primary relative"
+              onClick={handleWhatsAppClick}
+            >
+              Enviar mensagem via WhatsApp
+            </Button>
+          </>
+        )}
         
         <Button 
           variant="outline"
