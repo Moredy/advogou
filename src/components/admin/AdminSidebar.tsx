@@ -7,19 +7,27 @@ import { cn } from "@/lib/utils";
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  const { logout } = useAdminAuth();
+  const { logout, user } = useAdminAuth();
+
+  // Verificar se o usuário é um administrador
+  const isAdmin = user?.email === 'admin@jurisquick.com';
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
-  const menuItems = [
+  // Lista base de itens do menu
+  const baseMenuItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: <Home size={20} /> },
     { name: "Planos", path: "/admin/planos", icon: <CreditCard size={20} /> },
     { name: "Meu Perfil", path: "/admin/perfil", icon: <User size={20} /> },
     { name: "Leads Recebidos", path: "/admin/leads", icon: <MessageSquare size={20} /> },
-    { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> },
   ];
+  
+  // Adicionar item de validação de advogados apenas se for admin
+  const menuItems = isAdmin 
+    ? [...baseMenuItems, { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> }]
+    : baseMenuItems;
 
   return (
     <div className="w-64 min-h-screen bg-juris-dark text-white">
