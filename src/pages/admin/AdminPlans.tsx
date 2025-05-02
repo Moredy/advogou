@@ -15,6 +15,8 @@ type Plan = {
   features: string[];
   leadsPerMonth: number;
   recommended?: boolean;
+  disabled?: boolean;
+  free?: boolean;
 };
 
 const AdminPlans: React.FC = () => {
@@ -62,6 +64,19 @@ const AdminPlans: React.FC = () => {
 
   const plans: Plan[] = [
     {
+      id: "free",
+      name: "Gratuito",
+      price: 0,
+      description: "Para advogados que querem conhecer nossa plataforma.",
+      features: [
+        "1 lead qualificado por mês",
+        "Perfil na plataforma",
+        "Suporte por e-mail"
+      ],
+      leadsPerMonth: 1,
+      free: true
+    },
+    {
       id: "basic",
       name: "Básico",
       price: 249,
@@ -71,7 +86,8 @@ const AdminPlans: React.FC = () => {
         "Perfil na plataforma",
         "Suporte por e-mail"
       ],
-      leadsPerMonth: 5
+      leadsPerMonth: 5,
+      disabled: true
     },
     {
       id: "premium",
@@ -85,7 +101,8 @@ const AdminPlans: React.FC = () => {
         "Análise mensal de conversão"
       ],
       leadsPerMonth: 15,
-      recommended: true
+      recommended: true,
+      disabled: true
     },
     {
       id: "enterprise",
@@ -99,7 +116,8 @@ const AdminPlans: React.FC = () => {
         "Análise semanal de conversão",
         "Exclusividade em área de atuação"
       ],
-      leadsPerMonth: 30
+      leadsPerMonth: 30,
+      disabled: true
     }
   ];
 
@@ -113,7 +131,7 @@ const AdminPlans: React.FC = () => {
       const { error } = await supabase
         .from('lawyers')
         .update({
-          plan_type: planId as "basic" | "premium" | "enterprise",
+          plan_type: planId as "free" | "basic" | "premium" | "enterprise",
           subscription_active: true,
           updated_at: new Date().toISOString()
         })
@@ -143,24 +161,40 @@ const AdminPlans: React.FC = () => {
     }
   };
 
+  // Auto-select the free plan if no plan is selected
+  useEffect(() => {
+    if (!currentPlan && user && !loading) {
+      handleSubscribe("free");
+    }
+  }, [currentPlan, user]);
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Planos de Assinatura</h1>
         <p className="text-muted-foreground mt-1">
-          Escolha o melhor plano para receber leads qualificados
+          Experimente nossa plataforma gratuitamente. Planos pagos serão liberados em breve.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => (
           <Card 
             key={plan.id} 
-            className={plan.recommended ? "border-juris-accent shadow-lg" : ""}
+            className={`
+              ${plan.recommended ? "border-juris-accent shadow-lg" : ""}
+              ${plan.disabled ? "opacity-60" : ""}
+              ${plan.free ? "border-green-500 shadow-md" : ""}
+            `}
           >
             {plan.recommended && (
               <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-juris-accent text-white text-xs font-semibold px-3 py-1 rounded-full">
                 Recomendado
+              </div>
+            )}
+            {plan.free && (
+              <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                Grátis
               </div>
             )}
             <CardHeader>
@@ -169,8 +203,8 @@ const AdminPlans: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-baseline">
-                <span className="text-3xl font-bold">R$ {plan.price}</span>
-                <span className="text-muted-foreground ml-1">/mês</span>
+                <span className="text-3xl font-bold">{plan.price > 0 ? `R$ ${plan.price}` : 'Grátis'}</span>
+                {plan.price > 0 && <span className="text-muted-foreground ml-1">/mês</span>}
               </div>
               
               <div>
@@ -189,8 +223,8 @@ const AdminPlans: React.FC = () => {
               <Button 
                 onClick={() => handleSubscribe(plan.id)} 
                 className="w-full" 
-                variant={plan.recommended ? "default" : "outline"}
-                disabled={loading !== null || lawyer?.plan_type === plan.id}
+                variant={plan.free ? "default" : plan.recommended ? "default" : "outline"}
+                disabled={loading !== null || lawyer?.plan_type === plan.id || plan.disabled}
               >
                 {loading === plan.id ? "Processando..." : 
                  lawyer?.plan_type === plan.id ? "Plano Atual" : 
@@ -217,9 +251,9 @@ const AdminPlans: React.FC = () => {
             </p>
           </div>
           <div>
-            <h3 className="font-medium">Existe fidelidade?</h3>
+            <h3 className="font-medium">Quando os planos pagos estarão disponíveis?</h3>
             <p className="text-sm text-gray-600 mt-1">
-              Não há período de fidelidade. Você pode cancelar sua assinatura a qualquer momento.
+              Estamos em fase de testes e em breve liberaremos os planos pagos. Enquanto isso, você pode utilizar o plano gratuito para conhecer a plataforma.
             </p>
           </div>
         </div>
