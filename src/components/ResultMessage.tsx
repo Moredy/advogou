@@ -86,7 +86,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
         </div>
         
         <Button 
-          className="w-full btn-primary relative"
+          className="w-full btn-primary relative whitespace-nowrap"
           onClick={handleWhatsAppClick}
         >
           <Phone size={18} className="mr-2" />
