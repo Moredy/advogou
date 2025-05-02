@@ -86,11 +86,11 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
         </div>
         
         <Button 
-          className="w-full btn-primary relative whitespace-nowrap"
+          className="w-full flex items-center justify-center gap-2 btn-primary"
           onClick={handleWhatsAppClick}
         >
-          <Phone size={18} className="mr-2" />
-          Entrar em contato via WhatsApp
+          <Phone size={18} />
+          <span className="whitespace-nowrap">Entrar em contato via WhatsApp</span>
         </Button>
         
         <Button 
