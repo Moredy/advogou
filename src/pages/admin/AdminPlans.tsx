@@ -92,7 +92,8 @@ const AdminPlans: React.FC = () => {
         "Pessoas que estão para entrar com processo",
         "Pessoas que foram citadas em processos"
       ],
-      leadsPerMonth: 10
+      leadsPerMonth: 10,
+      disabled: true
     },
     {
       id: "premium",
@@ -105,7 +106,8 @@ const AdminPlans: React.FC = () => {
         "Pessoas que foram citadas em processos"
       ],
       leadsPerMonth: "Ilimitado",
-      recommended: true
+      recommended: true,
+      disabled: true
     }
   ];
 
@@ -180,11 +182,17 @@ const AdminPlans: React.FC = () => {
               ${plan.recommended ? "border-juris-accent shadow-lg" : ""}
               ${plan.free ? "border-green-500 shadow-md" : ""}
               ${currentPlan === plan.id ? "ring-2 ring-green-500" : ""}
+              ${plan.disabled ? "opacity-60" : ""}
             `}
           >
             <CardHeader>
               <div className="flex items-center gap-2 mb-1">
                 <CardTitle>{plan.name}</CardTitle>
+                {plan.disabled && (
+                  <Badge variant="outline" className="ml-2">
+                    Em breve
+                  </Badge>
+                )}
               </div>
               <CardDescription>{plan.description}</CardDescription>
             </CardHeader>
@@ -213,6 +221,7 @@ const AdminPlans: React.FC = () => {
                 onClick={() => handleSubscribe(plan.id)} 
                 className="w-full" 
                 variant={plan.free ? "default" : plan.recommended ? "default" : "outline"}
+                disabled={plan.disabled}
               >
                 {loading === plan.id ? "Processando..." : 
                  currentPlan === plan.id ? "Plano Atual" : 
