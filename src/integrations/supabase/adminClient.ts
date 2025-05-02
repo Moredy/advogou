@@ -27,3 +27,9 @@ export const supabaseAdmin = createClient<Database>(
     }
   }
 );
+
+// Função utilitária para depuração de cabeçalhos sem acessar diretamente propriedades protegidas
+export const getAuthHeaders = () => ({
+  'Authorization': `Bearer ${SUPABASE_ADMIN_KEY}`,
+  'apikey': SUPABASE_ADMIN_KEY
+});

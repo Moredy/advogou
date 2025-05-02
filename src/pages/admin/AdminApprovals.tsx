@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Shield, ShieldCheck, ShieldX, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabaseAdmin } from "@/integrations/supabase/adminClient"; // Usando o cliente admin
+import { supabaseAdmin, getAuthHeaders } from "@/integrations/supabase/adminClient"; // Importando a função utilitária
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -42,8 +42,8 @@ const AdminApprovals: React.FC = () => {
     try {
       console.log("Buscando todos os advogados cadastrados (com cliente admin)");
       
-      // Verificando e mostrando os cabeçalhos para depuração
-      const headers = supabaseAdmin.rest.headers;
+      // Usando a função utilitária para mostrar os cabeçalhos para depuração
+      const headers = getAuthHeaders();
       console.log("Cabeçalhos usados na requisição:", headers);
       
       // Usando o cliente admin para ignorar RLS e obter todos os registros
