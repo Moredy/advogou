@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPlans from "./pages/admin/AdminPlans";
 import AdminProfile from "./pages/admin/AdminProfile";
 import AdminLeads from "./pages/admin/AdminLeads";
+import AdminApprovals from "./pages/admin/AdminApprovals";
 import AdminLayout from "./components/admin/AdminLayout";
 
 const queryClient = new QueryClient({
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="planos" element={<AdminPlans />} />
               <Route path="perfil" element={<AdminProfile />} />
               <Route path="leads" element={<AdminLeads />} />
+              <Route path="aprovacoes" element={<AdminApprovals />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

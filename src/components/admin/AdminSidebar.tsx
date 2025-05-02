@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, CreditCard, User, MessageSquare, LogOut } from "lucide-react";
+import { Home, CreditCard, User, MessageSquare, LogOut, Shield } from "lucide-react";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ const AdminSidebar: React.FC = () => {
     { name: "Planos", path: "/admin/planos", icon: <CreditCard size={20} /> },
     { name: "Meu Perfil", path: "/admin/perfil", icon: <User size={20} /> },
     { name: "Leads Recebidos", path: "/admin/leads", icon: <MessageSquare size={20} /> },
+    { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> },
   ];
 
   return (
