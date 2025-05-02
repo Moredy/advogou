@@ -24,7 +24,7 @@ type Lead = {
   quality_rating?: number;
   relevant?: boolean;
   comments?: string;
-  client_email: string;
+  client_email: string; // We'll keep this in the type but won't display it
   lawyer_id: string;
   updated_at: string;
 };
