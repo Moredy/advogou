@@ -30,3 +30,28 @@ export const getAuthHeaders = () => ({
   'Authorization': `Bearer ${SUPABASE_ADMIN_KEY}`,
   'apikey': SUPABASE_ADMIN_KEY
 });
+
+// Função para testar a conexão manualmente no console
+export const testAdminConnection = async () => {
+  try {
+    console.log("Testando conexão admin com Supabase...");
+    console.log("URL:", SUPABASE_URL);
+    console.log("Cabeçalhos:", getAuthHeaders());
+    
+    const { data, error } = await supabaseAdmin
+      .from('lawyers')
+      .select('count')
+      .limit(1);
+    
+    if (error) {
+      console.error("Erro na conexão:", error);
+      return { success: false, error };
+    }
+    
+    console.log("Conexão bem-sucedida:", data);
+    return { success: true, data };
+  } catch (e) {
+    console.error("Exceção ao testar conexão:", e);
+    return { success: false, error: e };
+  }
+};

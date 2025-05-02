@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield } from "lucide-react";
+import { Loader2, Shield, BugPlay } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabaseAdmin } from "@/integrations/supabase/adminClient";
+import { supabaseAdmin, testAdminConnection } from "@/integrations/supabase/adminClient";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { LawyersList } from "@/components/admin/lawyers/LawyersList";
 import { LawyerDetails } from "@/components/admin/lawyers/LawyerDetails";
@@ -17,6 +17,7 @@ const AdminApprovals: React.FC = () => {
   const [lawyers, setLawyers] = useState<Lawyer[]>([]);
   const [selectedLawyer, setSelectedLawyer] = useState<Lawyer | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [testingConnection, setTestingConnection] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -92,6 +93,35 @@ const AdminApprovals: React.FC = () => {
     }
   };
 
+  const testConnection = async () => {
+    setTestingConnection(true);
+    try {
+      const result = await testAdminConnection();
+      if (result.success) {
+        toast({
+          title: "Conexão bem-sucedida",
+          description: "A conexão admin com Supabase está funcionando corretamente.",
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Erro na conexão",
+          description: `A conexão falhou: ${result.error?.message || "Erro desconhecido"}`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao testar conexão:", error);
+      toast({
+        title: "Erro no teste",
+        description: "Ocorreu um erro ao testar a conexão.",
+        variant: "destructive"
+      });
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -139,20 +169,36 @@ const AdminApprovals: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Validação de Advogados</h1>
-        <Button 
-          onClick={fetchLawyers} 
-          variant="outline" 
-          size="sm" 
-          className="gap-2"
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Shield className="h-4 w-4" />
-          )}
-          {loading ? "Carregando..." : "Atualizar lista"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={testConnection}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={testingConnection}
+          >
+            {testingConnection ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <BugPlay className="h-4 w-4" />
+            )}
+            {testingConnection ? "Testando..." : "Testar Conexão"}
+          </Button>
+          <Button 
+            onClick={fetchLawyers} 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Shield className="h-4 w-4" />
+            )}
+            {loading ? "Carregando..." : "Atualizar lista"}
+          </Button>
+        </div>
       </div>
 
       {fetchError && (
