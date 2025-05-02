@@ -9,7 +9,92 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      lawyers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          oab_number: string
+          plan_type: string | null
+          specialty: string
+          subscription_active: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          oab_number: string
+          plan_type?: string | null
+          specialty: string
+          subscription_active?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          oab_number?: string
+          plan_type?: string | null
+          specialty?: string
+          subscription_active?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          case_area: string
+          client_email: string
+          client_name: string
+          created_at: string
+          description: string | null
+          id: string
+          lawyer_id: string
+          quality_rating: number | null
+          relevant: boolean | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          case_area: string
+          client_email: string
+          client_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          lawyer_id: string
+          quality_rating?: number | null
+          relevant?: boolean | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          case_area?: string
+          client_email?: string
+          client_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          lawyer_id?: string
+          quality_rating?: number | null
+          relevant?: boolean | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_lawyer_id_fkey"
+            columns: ["lawyer_id"]
+            isOneToOne: false
+            referencedRelation: "lawyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

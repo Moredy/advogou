@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,41 +8,67 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useForm } from "react-hook-form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const loginSchema = z.object({
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+});
+
+const registerSchema = z.object({
+  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
+  email: z.string().email("E-mail inválido"),
+  oabNumber: z.string().min(3, "Número OAB inválido"),
+  specialty: z.string().min(3, "Especialidade deve ter pelo menos 3 caracteres"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+  confirmPassword: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+}).refine((data) => data.password === data.confirmPassword, {
+  path: ["confirmPassword"],
+  message: "As senhas não conferem",
+});
 
 const AdminLogin: React.FC = () => {
   const { login, register, isAuthenticated } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const [loginForm, setLoginForm] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [registerForm, setRegisterForm] = useState({
-    name: "",
-    email: "",
-    oabNumber: "",
-    specialty: "",
-    password: "",
-    confirmPassword: "",
-  });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if already logged in
-  React.useEffect(() => {
+  // Formulários com validação
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const registerForm = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      oabNumber: "",
+      specialty: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  // Redirecionar se já estiver logado
+  useEffect(() => {
     if (isAuthenticated) {
       navigate("/admin/dashboard");
     }
   }, [isAuthenticated, navigate]);
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsSubmitting(true);
 
     try {
-      await login(loginForm.email, loginForm.password);
+      await login(values.email, values.password);
       navigate("/admin/dashboard");
       toast({
         title: "Login efetuado com sucesso",
@@ -59,35 +85,25 @@ const AdminLogin: React.FC = () => {
     }
   };
 
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegisterSubmit = async (values: z.infer<typeof registerSchema>) => {
     setIsSubmitting(true);
-
-    if (registerForm.password !== registerForm.confirmPassword) {
-      toast({
-        title: "Erro no cadastro",
-        description: "As senhas não conferem",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      return;
-    }
 
     try {
       await register(
         {
-          name: registerForm.name,
-          email: registerForm.email,
-          oabNumber: registerForm.oabNumber,
-          specialty: registerForm.specialty,
+          name: values.name,
+          email: values.email,
+          oab_number: values.oabNumber,
+          specialty: values.specialty,
         },
-        registerForm.password
+        values.password
       );
-      navigate("/admin/dashboard");
+      
       toast({
         title: "Cadastro realizado com sucesso",
-        description: "Bem-vindo ao JurisQuick",
+        description: "Por favor, verifique seu e-mail para confirmar seu cadastro.",
       });
+      
     } catch (error) {
       toast({
         title: "Erro ao realizar cadastro",
@@ -124,111 +140,171 @@ const AdminLogin: React.FC = () => {
               </TabsList>
 
               <TabsContent value="login">
-                <form onSubmit={handleLoginSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">E-mail</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      value={loginForm.email}
-                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>E-mail</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="seu@email.com"
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Senha</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      required
-                      value={loginForm.password}
-                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="password"
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? "Processando..." : "Entrar"}
-                  </Button>
-                </form>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? "Processando..." : "Entrar"}
+                    </Button>
+                  </form>
+                </Form>
               </TabsContent>
 
               <TabsContent value="register">
-                <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nome Completo</Label>
-                    <Input
-                      id="name"
-                      placeholder="Dr. Nome Completo"
-                      required
-                      value={registerForm.name}
-                      onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                <Form {...registerForm}>
+                  <form onSubmit={registerForm.handleSubmit(handleRegisterSubmit)} className="space-y-4">
+                    <FormField
+                      control={registerForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Completo</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Dr. Nome Completo"
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-email">E-mail</Label>
-                    <Input
-                      id="reg-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      value={registerForm.email}
-                      onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                    <FormField
+                      control={registerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>E-mail</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="seu@email.com"
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="oabNumber">Número OAB</Label>
-                      <Input
-                        id="oabNumber"
-                        placeholder="123456/UF"
-                        required
-                        value={registerForm.oabNumber}
-                        onChange={(e) => setRegisterForm({ ...registerForm, oabNumber: e.target.value })}
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={registerForm.control}
+                        name="oabNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Número OAB</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="123456/UF"
+                                disabled={isSubmitting}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={registerForm.control}
+                        name="specialty"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Especialidade</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Direito Civil"
+                                disabled={isSubmitting}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="specialty">Especialidade</Label>
-                      <Input
-                        id="specialty"
-                        placeholder="Direito Civil"
-                        required
-                        value={registerForm.specialty}
-                        onChange={(e) => setRegisterForm({ ...registerForm, specialty: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-password">Senha</Label>
-                    <Input
-                      id="reg-password"
-                      type="password"
-                      required
-                      value={registerForm.password}
-                      onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                    <FormField
+                      control={registerForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="password"
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirme a Senha</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      required
-                      value={registerForm.confirmPassword}
-                      onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                    <FormField
+                      control={registerForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirme a Senha</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="password"
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? "Processando..." : "Cadastrar"}
-                  </Button>
-                </form>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? "Processando..." : "Cadastrar"}
+                    </Button>
+                  </form>
+                </Form>
               </TabsContent>
             </Tabs>
           </CardContent>

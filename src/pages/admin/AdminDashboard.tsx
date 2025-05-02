@@ -1,19 +1,146 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Users, MessageSquare, TrendingUp, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+
+type DashboardStats = {
+  leadsReceived: number;
+  leadsConvertidos: number;
+  conversion: number;
+  pendingEvaluation: number;
+};
+
+type LeadStatus = 'pending' | 'contacted' | 'converted' | 'not_converted';
+
+type Lead = {
+  id: string;
+  client_name: string;
+  case_area: string;
+  created_at: string;
+  status: LeadStatus;
+};
 
 const AdminDashboard: React.FC = () => {
-  const { lawyer } = useAdminAuth();
-  
-  // Dummy data for the dashboard
-  const dashboardData = {
-    leadsReceived: 12,
-    leadsConvertidos: 5,
-    conversion: 41.67,
-    pendingEvaluation: 3,
+  const { lawyer, user } = useAdminAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    leadsReceived: 0,
+    leadsConvertidos: 0,
+    conversion: 0,
+    pendingEvaluation: 0,
+  });
+  const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      // Buscar todos os leads do advogado
+      const { data: leadsData, error: leadsError } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('lawyer_id', user.id);
+
+      if (leadsError) throw leadsError;
+
+      // Calcular estatísticas
+      const leads = leadsData || [];
+      const totalLeads = leads.length;
+      const convertedLeads = leads.filter(lead => lead.status === 'converted').length;
+      const conversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
+      const pendingEvaluation = leads.filter(lead => lead.quality_rating === null).length;
+
+      setStats({
+        leadsReceived: totalLeads,
+        leadsConvertidos: convertedLeads,
+        conversion: Number(conversionRate.toFixed(2)),
+        pendingEvaluation
+      });
+
+      // Buscar leads recentes
+      const { data: recentLeadsData, error: recentLeadsError } = await supabase
+        .from('leads')
+        .select('id, client_name, case_area, created_at, status')
+        .eq('lawyer_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (recentLeadsError) throw recentLeadsError;
+
+      setRecentLeads(recentLeadsData || []);
+
+    } catch (error) {
+      console.error('Erro ao buscar dados do dashboard:', error);
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar os dados do dashboard. Tente novamente mais tarde.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const getStatusBadge = (status: LeadStatus) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <span className="inline-flex items-center rounded-full bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800">
+            Pendente
+          </span>
+        );
+      case 'contacted':
+        return (
+          <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800">
+            Contatado
+          </span>
+        );
+      case 'converted':
+        return (
+          <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
+            Convertido
+          </span>
+        );
+      case 'not_converted':
+        return (
+          <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-800">
+            Não Convertido
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-800">
+            Desconhecido
+          </span>
+        );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-juris-accent" />
+        <span className="ml-2 text-lg">Carregando dados...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -29,7 +156,7 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {!lawyer?.planType && (
+      {!lawyer?.plan_type && (
         <Card className="border-orange-200 bg-orange-50">
           <CardContent className="p-6 flex items-start space-x-4">
             <div className="rounded-full bg-orange-100 p-3">
@@ -58,9 +185,9 @@ const AdminDashboard: React.FC = () => {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.leadsReceived}</div>
+            <div className="text-2xl font-bold">{stats.leadsReceived}</div>
             <p className="text-xs text-muted-foreground">
-              +2 nos últimos 7 dias
+              Total de leads recebidos
             </p>
           </CardContent>
         </Card>
@@ -71,9 +198,9 @@ const AdminDashboard: React.FC = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.leadsConvertidos}</div>
+            <div className="text-2xl font-bold">{stats.leadsConvertidos}</div>
             <p className="text-xs text-muted-foreground">
-              +1 na última semana
+              Clientes adquiridos
             </p>
           </CardContent>
         </Card>
@@ -84,9 +211,9 @@ const AdminDashboard: React.FC = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.conversion}%</div>
+            <div className="text-2xl font-bold">{stats.conversion}%</div>
             <p className="text-xs text-muted-foreground">
-              +2% que o mês anterior
+              De leads para clientes
             </p>
           </CardContent>
         </Card>
@@ -97,7 +224,7 @@ const AdminDashboard: React.FC = () => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.pendingEvaluation}</div>
+            <div className="text-2xl font-bold">{stats.pendingEvaluation}</div>
             <p className="text-xs text-muted-foreground">
               Avaliar qualidade dos leads
             </p>
@@ -113,50 +240,36 @@ const AdminDashboard: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="py-3 px-4 text-left font-medium">Cliente</th>
-                  <th className="py-3 px-4 text-left font-medium">Área</th>
-                  <th className="py-3 px-4 text-left font-medium">Data</th>
-                  <th className="py-3 px-4 text-left font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="py-3 px-4">João Silva</td>
-                  <td className="py-3 px-4">Direito do Consumidor</td>
-                  <td className="py-3 px-4">16/04/2025</td>
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center rounded-full bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800">
-                      Pendente
-                    </span>
-                  </td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3 px-4">Maria Oliveira</td>
-                  <td className="py-3 px-4">Direito Civil</td>
-                  <td className="py-3 px-4">15/04/2025</td>
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
-                      Convertido
-                    </span>
-                  </td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3 px-4">Pedro Santos</td>
-                  <td className="py-3 px-4">Direito Trabalhista</td>
-                  <td className="py-3 px-4">14/04/2025</td>
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-800">
-                      Não Convertido
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {recentLeads.length > 0 ? (
+            <div className="rounded-md border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="py-3 px-4 text-left font-medium">Cliente</th>
+                    <th className="py-3 px-4 text-left font-medium">Área</th>
+                    <th className="py-3 px-4 text-left font-medium">Data</th>
+                    <th className="py-3 px-4 text-left font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentLeads.map((lead) => (
+                    <tr key={lead.id} className="border-b">
+                      <td className="py-3 px-4">{lead.client_name}</td>
+                      <td className="py-3 px-4">{lead.case_area}</td>
+                      <td className="py-3 px-4">{formatDate(lead.created_at)}</td>
+                      <td className="py-3 px-4">
+                        {getStatusBadge(lead.status)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              Nenhum lead recebido ainda. Assine um plano para começar a receber leads.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

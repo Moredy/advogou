@@ -1,10 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type Plan = {
   id: string;
@@ -17,9 +18,34 @@ type Plan = {
 };
 
 const AdminPlans: React.FC = () => {
-  const { lawyer } = useAdminAuth();
+  const { lawyer, user } = useAdminAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
+
+  // Atualize os dados do advogado quando a página for carregada
+  useEffect(() => {
+    if (user) {
+      fetchLawyerData();
+    }
+  }, [user]);
+
+  const fetchLawyerData = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('lawyers')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      if (error) {
+        console.error('Erro ao buscar dados do advogado:', error);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados do advogado:', error);
+    }
+  };
 
   const plans: Plan[] = [
     {
@@ -64,31 +90,42 @@ const AdminPlans: React.FC = () => {
     }
   ];
 
-  const handleSubscribe = (planId: string) => {
+  const handleSubscribe = async (planId: string) => {
+    if (!user) return;
+    
     setLoading(planId);
 
-    // Mock subscription process
-    setTimeout(() => {
-      // Update the lawyer object in context
-      const mockSubscription = {
-        planType: planId as "basic" | "premium" | "enterprise",
-        subscriptionActive: true
-      };
+    try {
+      // Atualizar o plano do advogado no Supabase
+      const { error } = await supabase
+        .from('lawyers')
+        .update({
+          plan_type: planId as "basic" | "premium" | "enterprise",
+          subscription_active: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
 
-      // In a real implementation, this would be an API call
-      const updatedLawyer = { ...lawyer, ...mockSubscription };
-      localStorage.setItem("jurisquick_lawyer", JSON.stringify(updatedLawyer));
+      if (error) throw error;
 
       toast({
         title: "Plano assinado com sucesso!",
         description: `Você assinou o plano ${plans.find(p => p.id === planId)?.name}. Você começará a receber leads em breve.`,
       });
 
-      setLoading(null);
+      // Atualizar os dados do advogado
+      await fetchLawyerData();
       
-      // Force a page reload to update the lawyer context
-      window.location.href = "/admin/dashboard";
-    }, 2000);
+    } catch (error) {
+      console.error('Erro ao assinar plano:', error);
+      toast({
+        title: "Erro ao assinar plano",
+        description: "Ocorreu um erro ao processar sua assinatura. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (
@@ -138,9 +175,11 @@ const AdminPlans: React.FC = () => {
                 onClick={() => handleSubscribe(plan.id)} 
                 className="w-full" 
                 variant={plan.recommended ? "default" : "outline"}
-                disabled={loading !== null}
+                disabled={loading !== null || lawyer?.plan_type === plan.id}
               >
-                {loading === plan.id ? "Processando..." : lawyer?.planType === plan.id ? "Plano Atual" : "Assinar Plano"}
+                {loading === plan.id ? "Processando..." : 
+                 lawyer?.plan_type === plan.id ? "Plano Atual" : 
+                 "Assinar Plano"}
               </Button>
             </CardFooter>
           </Card>
