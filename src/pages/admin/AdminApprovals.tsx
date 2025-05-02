@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Shield, BugPlay } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabaseAdmin, testAdminConnection } from "@/integrations/supabase/adminClient";
+import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { LawyersList } from "@/components/admin/lawyers/LawyersList";
 import { LawyerDetails } from "@/components/admin/lawyers/LawyerDetails";
@@ -29,9 +28,9 @@ const AdminApprovals: React.FC = () => {
     setLoading(true);
     setFetchError(null);
     try {
-      console.log("Buscando advogados cadastrados com cliente admin");
+      console.log("Buscando advogados cadastrados com cliente normal");
       
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabase
         .from('lawyers')
         .select('*')
         .order('created_at', { ascending: false });
@@ -61,7 +60,7 @@ const AdminApprovals: React.FC = () => {
 
   const handleStatusChange = async (lawyerId: string, newStatus: LawyerStatus) => {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await supabase
         .from('lawyers')
         .update({ status: newStatus })
         .eq('id', lawyerId);
@@ -96,18 +95,25 @@ const AdminApprovals: React.FC = () => {
   const testConnection = async () => {
     setTestingConnection(true);
     try {
-      const result = await testAdminConnection();
-      if (result.success) {
+      console.log("Testando conexão admin com Supabase...");
+      
+      const { data, error } = await supabase
+        .from('lawyers')
+        .select('count')
+        .limit(1);
+      
+      if (error) {
+        console.error("Erro na conexão:", error);
         toast({
-          title: "Conexão bem-sucedida",
-          description: "A conexão admin com Supabase está funcionando corretamente.",
-          variant: "default"
+          title: "Erro na conexão",
+          description: `A conexão falhou: ${error.message || "Erro desconhecido"}`,
+          variant: "destructive"
         });
       } else {
         toast({
-          title: "Erro na conexão",
-          description: `A conexão falhou: ${result.error?.message || "Erro desconhecido"}`,
-          variant: "destructive"
+          title: "Conexão bem-sucedida",
+          description: "A conexão com Supabase está funcionando corretamente.",
+          variant: "default"
         });
       }
     } catch (error) {

@@ -12,12 +12,17 @@ const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
 
+  // Lista de emails administrativos
+  const adminEmails = ['admin@jurisquick.com'];
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/admin");
     } else if (location.pathname === '/admin/aprovacoes') {
-      // Check if user is admin to access approvals page
-      if (user?.email !== 'admin@jurisquick.com') {
+      // Check if user email is in the admin list
+      const isAdmin = adminEmails.includes(user?.email || '');
+      
+      if (!isAdmin) {
         // Notificar o usuário e redirecionar
         toast({
           title: "Acesso restrito",
