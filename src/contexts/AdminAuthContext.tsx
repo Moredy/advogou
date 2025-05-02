@@ -27,6 +27,7 @@ interface AdminAuthContextType {
   logout: () => Promise<void>;
   register: (lawyerData: Partial<Lawyer>, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  refreshLawyerProfile: () => Promise<void>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType>({
@@ -38,6 +39,7 @@ const AdminAuthContext = createContext<AdminAuthContextType>({
   logout: async () => {},
   register: async () => {},
   resetPassword: async () => {},
+  refreshLawyerProfile: async () => {},
 });
 
 export const useAdminAuth = () => useContext(AdminAuthContext);
@@ -49,6 +51,35 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
+  
+  // Função para buscar o perfil do advogado
+  const fetchLawyerProfile = async (userId: string) => {
+    try {
+      console.log("Buscando perfil do advogado para o ID:", userId);
+      const { data, error } = await supabase
+        .from('lawyers')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error("Erro ao buscar perfil do advogado:", error);
+        return;
+      }
+
+      console.log("Perfil do advogado encontrado:", data);
+      setLawyer(data as Lawyer);
+    } catch (error) {
+      console.error("Erro ao buscar perfil do advogado:", error);
+    }
+  };
+  
+  // Função pública para recarregar o perfil do advogado
+  const refreshLawyerProfile = async () => {
+    if (user) {
+      await fetchLawyerProfile(user.id);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -99,28 +130,6 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       subscription.unsubscribe();
     };
   }, []);
-
-  // Função para buscar o perfil do advogado
-  const fetchLawyerProfile = async (userId: string) => {
-    try {
-      console.log("Buscando perfil do advogado para o ID:", userId);
-      const { data, error } = await supabase
-        .from('lawyers')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error("Erro ao buscar perfil do advogado:", error);
-        return;
-      }
-
-      console.log("Perfil do advogado encontrado:", data);
-      setLawyer(data as Lawyer);
-    } catch (error) {
-      console.error("Erro ao buscar perfil do advogado:", error);
-    }
-  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -243,7 +252,8 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       login, 
       logout, 
       register, 
-      resetPassword 
+      resetPassword,
+      refreshLawyerProfile
     }}>
       {children}
     </AdminAuthContext.Provider>

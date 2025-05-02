@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminProfile: React.FC = () => {
-  const { lawyer, user } = useAdminAuth();
+  const { lawyer, user, refreshLawyerProfile } = useAdminAuth();
   const { toast } = useToast();
   
   const [personalInfo, setPersonalInfo] = useState({
@@ -79,6 +79,9 @@ const AdminProfile: React.FC = () => {
         title: "Perfil atualizado",
         description: "Suas informações foram atualizadas com sucesso.",
       });
+      
+      // Atualiza os dados do advogado no contexto
+      await refreshLawyerProfile();
     } catch (error: any) {
       console.error('Erro ao atualizar perfil:', error);
       toast({
@@ -96,6 +99,7 @@ const AdminProfile: React.FC = () => {
     if (!user) return;
     
     setIsSaving(true);
+    console.log("Salvando especialidades:", specialties);
     
     try {
       // Pegamos a primeira especialidade da lista
@@ -115,6 +119,9 @@ const AdminProfile: React.FC = () => {
         title: "Especialidades atualizadas",
         description: "Suas áreas de atuação foram atualizadas com sucesso.",
       });
+      
+      // Atualiza os dados do advogado no contexto
+      await refreshLawyerProfile();
     } catch (error) {
       console.error('Erro ao atualizar especialidades:', error);
       toast({
@@ -161,6 +168,9 @@ const AdminProfile: React.FC = () => {
         title: "Biografia atualizada",
         description: "Sua biografia foi atualizada com sucesso.",
       });
+      
+      // Atualiza os dados do advogado no contexto
+      await refreshLawyerProfile();
     } catch (error) {
       console.error('Erro ao atualizar biografia:', error);
       toast({
