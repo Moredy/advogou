@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -147,12 +146,14 @@ const OnboardingForm: React.FC = () => {
       // Encontrar um advogado para o lead
       const areaName = getAreaName();
       
-      // Obter um advogado da área especializada, excluindo contas admin
+      // MODIFICAÇÃO: Obter um advogado da área especializada, 
+      // excluindo contas admin e garantindo que apenas advogados aprovados sejam considerados
       const { data: lawyers, error: lawyersError } = await supabase
         .from('lawyers')
         .select('id, email')
         .eq('specialty', areaName.toLowerCase())
         .eq('subscription_active', true)
+        .eq('status', 'approved') // Garantir que apenas advogados aprovados recebam leads
         .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
         .limit(1);
 
@@ -164,11 +165,13 @@ const OnboardingForm: React.FC = () => {
       let selectedLawyerId: string;
 
       if (!lawyers || lawyers.length === 0) {
-        // Não encontrou advogado especialista, tenta encontrar qualquer advogado ativo, excluindo admin
+        // MODIFICAÇÃO: Se não encontrou advogado especialista aprovado,
+        // tenta encontrar qualquer advogado ativo E aprovado, excluindo admin
         const { data: anyLawyers, error: anyLawyersError } = await supabase
           .from('lawyers')
           .select('id, email')
           .eq('subscription_active', true)
+          .eq('status', 'approved') // Garantir que apenas advogados aprovados recebam leads
           .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
           .limit(1);
           
