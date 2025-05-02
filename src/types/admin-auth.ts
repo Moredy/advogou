@@ -1,5 +1,6 @@
 
 import { Session, User, AuthError } from "@supabase/supabase-js";
+import { LawyerStatus } from "../types/lawyer"; // Import LawyerStatus type
 
 export type Specialty = {
   id: string;
@@ -19,6 +20,7 @@ export type Lawyer = {
   subscription_active: boolean;
   bio: string | null;
   phone: string | null;
+  status: LawyerStatus; // Add the status property using LawyerStatus type
   created_at?: string;
   updated_at?: string;
 };
