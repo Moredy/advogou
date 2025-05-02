@@ -39,8 +39,12 @@ const AdminProfile: React.FC = () => {
         oab_number: lawyer.oab_number || "",
       });
       
+      // Importante: Garantir que a especialidade seja carregada corretamente
       if (lawyer.specialty) {
+        console.log("Carregando especialidade do advogado:", lawyer.specialty);
         setSpecialties([lawyer.specialty]);
+      } else {
+        setSpecialties([]);
       }
       
       if (lawyer.bio) {
@@ -105,6 +109,7 @@ const AdminProfile: React.FC = () => {
       
       // Pegamos a primeira especialidade da lista
       const primarySpecialty = specialties[0];
+      console.log("Especialidade principal a ser salva:", primarySpecialty);
       
       const { error } = await supabase
         .from('lawyers')
@@ -114,7 +119,12 @@ const AdminProfile: React.FC = () => {
         })
         .eq('id', user.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Erro do Supabase ao salvar especialidade:", error);
+        throw error;
+      }
+      
+      console.log("Especialidade salva com sucesso no Supabase!");
       
       toast({
         title: "Especialidades atualizadas",

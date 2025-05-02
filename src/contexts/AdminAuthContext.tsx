@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User, AuthError } from "@supabase/supabase-js";
@@ -76,6 +77,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
   // Função pública para recarregar o perfil do advogado
   const refreshLawyerProfile = async () => {
     if (user) {
+      console.log("Recarregando perfil do advogado:", user.id);
       await fetchLawyerProfile(user.id);
     }
   };
