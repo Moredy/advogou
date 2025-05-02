@@ -13,6 +13,9 @@ type LawyersListProps = {
   onViewDetails: (lawyer: Lawyer) => void;
 };
 
+// Lista de emails administrativos
+const adminEmails = ['admin@jurisquick.com'];
+
 export const LawyersList: React.FC<LawyersListProps> = ({
   lawyers,
   loading,
@@ -20,7 +23,10 @@ export const LawyersList: React.FC<LawyersListProps> = ({
   getStatusBadge,
   onViewDetails,
 }) => {
-  if (lawyers.length === 0) {
+  // Filtrar advogados para excluir contas administrativas
+  const filteredLawyers = lawyers.filter(lawyer => !adminEmails.includes(lawyer.email));
+
+  if (filteredLawyers.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground">
         {loading ? "Carregando..." : "Nenhum advogado encontrado."}
@@ -42,7 +48,7 @@ export const LawyersList: React.FC<LawyersListProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {lawyers.map((lawyer) => (
+          {filteredLawyers.map((lawyer) => (
             <TableRow key={lawyer.id}>
               <TableCell>{lawyer.name}</TableCell>
               <TableCell>{lawyer.oab_number}</TableCell>
