@@ -1,4 +1,4 @@
-// Copy from AdminDashboard but with updated imports
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
@@ -46,7 +46,8 @@ const LawyerDashboard: React.FC = () => {
   const isAdmin = lawyer?.email && adminEmails.includes(lawyer.email);
   const isPending = lawyer?.status === "pending";
   const isRejected = lawyer?.status === "rejected";
-
+  const isApproved = lawyer?.status === "approved";
+  
   useEffect(() => {
     if (user) {
       fetchDashboardData();
@@ -58,46 +59,57 @@ const LawyerDashboard: React.FC = () => {
 
     setLoading(true);
     try {
-      // Buscar todos os leads do advogado
-      const { data: leadsData, error: leadsError } = await supabase
-        .from('leads')
-        .select('*')
-        .eq('lawyer_id', user.id);
+      // Only fetch leads if lawyer is approved
+      if (isApproved) {
+        // Buscar todos os leads do advogado
+        const { data: leadsData, error: leadsError } = await supabase
+          .from('leads')
+          .select('*')
+          .eq('lawyer_id', user.id);
 
-      if (leadsError) throw leadsError;
+        if (leadsError) throw leadsError;
 
-      // Calcular estatísticas
-      const leads = leadsData || [];
-      const totalLeads = leads.length;
-      const convertedLeads = leads.filter(lead => lead.status === 'converted').length;
-      const conversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
-      const pendingEvaluation = leads.filter(lead => lead.quality_rating === null).length;
+        // Calcular estatísticas
+        const leads = leadsData || [];
+        const totalLeads = leads.length;
+        const convertedLeads = leads.filter(lead => lead.status === 'converted').length;
+        const conversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
+        const pendingEvaluation = leads.filter(lead => lead.quality_rating === null).length;
 
-      setStats({
-        leadsReceived: totalLeads,
-        leadsConvertidos: convertedLeads,
-        conversion: Number(conversionRate.toFixed(2)),
-        pendingEvaluation
-      });
+        setStats({
+          leadsReceived: totalLeads,
+          leadsConvertidos: convertedLeads,
+          conversion: Number(conversionRate.toFixed(2)),
+          pendingEvaluation
+        });
 
-      // Buscar leads recentes
-      const { data: recentLeadsData, error: recentLeadsError } = await supabase
-        .from('leads')
-        .select('id, client_name, case_area, created_at, status')
-        .eq('lawyer_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(3);
+        // Buscar leads recentes
+        const { data: recentLeadsData, error: recentLeadsError } = await supabase
+          .from('leads')
+          .select('id, client_name, case_area, created_at, status')
+          .eq('lawyer_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(3);
 
-      if (recentLeadsError) throw recentLeadsError;
+        if (recentLeadsError) throw recentLeadsError;
 
-      // Cast the status to ensure it matches the LeadStatus type
-      if (recentLeadsData) {
-        setRecentLeads(recentLeadsData.map(lead => ({
-          ...lead,
-          status: lead.status as LeadStatus
-        })));
+        // Cast the status to ensure it matches the LeadStatus type
+        if (recentLeadsData) {
+          setRecentLeads(recentLeadsData.map(lead => ({
+            ...lead,
+            status: lead.status as LeadStatus
+          })));
+        }
+      } else {
+        // Reset stats for unapproved lawyers
+        setStats({
+          leadsReceived: 0,
+          leadsConvertidos: 0,
+          conversion: 0,
+          pendingEvaluation: 0
+        });
+        setRecentLeads([]);
       }
-
     } catch (error) {
       console.error('Erro ao buscar dados do dashboard:', error);
       toast({
@@ -246,7 +258,21 @@ const LawyerDashboard: React.FC = () => {
         </Alert>
       )}
 
-      {!lawyer?.plan_type && (
+      {!isAdmin && !isApproved && (
+        <Alert variant="warning">
+          <AlertTitle>Conta não aprovada</AlertTitle>
+          <AlertDescription>
+            Sua conta precisa ser aprovada por um administrador antes que você possa receber leads.
+            {isPending ? (
+              <p className="mt-2">Seu cadastro está em análise. Por favor, aguarde a aprovação.</p>
+            ) : (
+              <p className="mt-2">Seu cadastro foi rejeitado. Por favor, solicite uma reavaliação.</p>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {!lawyer?.plan_type && isApproved && (
         <Card className="border-orange-200 bg-orange-50">
           <CardContent className="p-6 flex items-start space-x-4">
             <div className="rounded-full bg-orange-100 p-3">
@@ -326,38 +352,46 @@ const LawyerDashboard: React.FC = () => {
         <CardHeader>
           <CardTitle>Leads Recentes</CardTitle>
           <CardDescription>
-            Últimos leads recebidos através da plataforma.
+            {isApproved 
+              ? "Últimos leads recebidos através da plataforma."
+              : "Você não pode receber leads até que sua conta seja aprovada por um administrador."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {recentLeads.length > 0 ? (
-            <div className="rounded-md border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="py-3 px-4 text-left font-medium">Cliente</th>
-                    <th className="py-3 px-4 text-left font-medium">Área</th>
-                    <th className="py-3 px-4 text-left font-medium">Data</th>
-                    <th className="py-3 px-4 text-left font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentLeads.map((lead) => (
-                    <tr key={lead.id} className="border-b">
-                      <td className="py-3 px-4">{lead.client_name}</td>
-                      <td className="py-3 px-4">{lead.case_area}</td>
-                      <td className="py-3 px-4">{formatDate(lead.created_at)}</td>
-                      <td className="py-3 px-4">
-                        {getStatusBadge(lead.status)}
-                      </td>
+          {isApproved ? (
+            recentLeads.length > 0 ? (
+              <div className="rounded-md border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="py-3 px-4 text-left font-medium">Cliente</th>
+                      <th className="py-3 px-4 text-left font-medium">Área</th>
+                      <th className="py-3 px-4 text-left font-medium">Data</th>
+                      <th className="py-3 px-4 text-left font-medium">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {recentLeads.map((lead) => (
+                      <tr key={lead.id} className="border-b">
+                        <td className="py-3 px-4">{lead.client_name}</td>
+                        <td className="py-3 px-4">{lead.case_area}</td>
+                        <td className="py-3 px-4">{formatDate(lead.created_at)}</td>
+                        <td className="py-3 px-4">
+                          {getStatusBadge(lead.status)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                Nenhum lead recebido ainda. Assine um plano para começar a receber leads.
+              </div>
+            )
           ) : (
             <div className="text-center py-6 text-muted-foreground">
-              Nenhum lead recebido ainda. Assine um plano para começar a receber leads.
+              Você poderá ver seus leads aqui após a aprovação da sua conta.
             </div>
           )}
         </CardContent>

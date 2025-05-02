@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { Loader2, Phone } from "lucide-react";
+import { Loader2, Phone, ShieldAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type LeadStatus = "pending" | "contacted" | "converted" | "not_converted";
 
@@ -31,7 +33,7 @@ type Lead = {
 
 const LawyerLeads: React.FC = () => {
   const { toast } = useToast();
-  const { user } = useAdminAuth();
+  const { user, lawyer } = useAdminAuth();
   const [openLeadId, setOpenLeadId] = useState<string | null>(null);
   const [feedbackForm, setFeedbackForm] = useState({
     relevant: true,
@@ -42,14 +44,21 @@ const LawyerLeads: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Check if lawyer is approved
+  const isApproved = lawyer?.status === "approved";
+
   // Load leads from Supabase
   useEffect(() => {
-    if (user) {
+    if (user && isApproved) {
       fetchLeads();
+    } else if (user) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, isApproved]);
 
   const fetchLeads = async () => {
+    if (!user || !isApproved) return;
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -58,9 +67,7 @@ const LawyerLeads: React.FC = () => {
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (data) {
         // Cast the status to ensure it matches the LeadStatus type
@@ -157,7 +164,7 @@ const LawyerLeads: React.FC = () => {
   };
 
   const handleUpdateStatus = async (leadId: string, status: LeadStatus) => {
-    if (!user) return;
+    if (!user || !isApproved) return;
 
     try {
       const { error } = await supabase
@@ -193,7 +200,7 @@ const LawyerLeads: React.FC = () => {
   };
 
   const handleSubmitFeedback = async (leadId: string) => {
-    if (!user) return;
+    if (!user || !isApproved) return;
 
     try {
       const { error } = await supabase
@@ -240,6 +247,27 @@ const LawyerLeads: React.FC = () => {
   const filteredLeads = statusFilter 
     ? leads.filter(lead => lead.status === statusFilter)
     : leads;
+
+  // If lawyer is not approved, show a warning message
+  if (!isApproved) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-semibold">Leads Recebidos</h1>
+        <Alert variant="warning">
+          <ShieldAlert className="h-4 w-4 mr-2" />
+          <AlertTitle>Conta não aprovada</AlertTitle>
+          <AlertDescription>
+            Sua conta precisa ser aprovada por um administrador antes que você possa receber leads.
+            {lawyer?.status === "pending" ? (
+              <p className="mt-2">Seu cadastro está em análise. Por favor, aguarde a aprovação.</p>
+            ) : (
+              <p className="mt-2">Seu cadastro foi rejeitado. Visite o Dashboard para solicitar uma reavaliação.</p>
+            )}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
