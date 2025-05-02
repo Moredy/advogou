@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ type Plan = {
   description: string;
   features: string[];
   leadsPerMonth: number | string;
-  badge: string;
   recommended?: boolean;
   disabled?: boolean;
   free?: boolean;
@@ -75,7 +75,6 @@ const AdminPlans: React.FC = () => {
       id: "free",
       name: "Gratuito",
       price: 0,
-      badge: "🟩",
       description: "Acesso a leads de todos os tipos",
       features: [
         "Limite de 5 leads por mês"
@@ -87,7 +86,6 @@ const AdminPlans: React.FC = () => {
       id: "basic",
       name: "Básico",
       price: 249,
-      badge: "🟦",
       description: "Prioridade no recebimento de até 10 leads por mês",
       features: [
         "Leads com maior intenção:",
@@ -100,7 +98,6 @@ const AdminPlans: React.FC = () => {
       id: "premium",
       name: "Premium",
       price: 499,
-      badge: "🟨",
       description: "Prioridade máxima, sem limite de leads",
       features: [
         "Leads com alta intenção:",
@@ -187,7 +184,6 @@ const AdminPlans: React.FC = () => {
           >
             <CardHeader>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl">{plan.badge}</span>
                 <CardTitle>{plan.name}</CardTitle>
               </div>
               <CardDescription>{plan.description}</CardDescription>
