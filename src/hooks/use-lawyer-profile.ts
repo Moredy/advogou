@@ -17,7 +17,7 @@ export function useLawyerProfile() {
 
       if (lawyerError) {
         console.error("Erro ao buscar perfil do advogado:", lawyerError);
-        return;
+        return null;
       }
 
       console.log("Perfil do advogado encontrado:", lawyerData);

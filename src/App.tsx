@@ -41,20 +41,20 @@ const App = () => {
               <Route path="/contato" element={<Contact />} />
               <Route path="/admin" element={<AdminLogin />} />
               
-              {/* Rotas de Administrador usando AdminLayout */}
+              {/* Admin routes */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="aprovacoes" element={<AdminApprovals />} />
               </Route>
               
-              {/* Rotas de Advogado usando LawyerLayout */}
+              {/* Lawyer routes */}
               <Route path="/admin" element={<LawyerLayout />}>
+                <Route path="dashboard" element={<LawyerDashboard />} />
                 <Route path="planos" element={<LawyerPlans />} />
                 <Route path="perfil" element={<LawyerProfile />} />
                 <Route path="leads" element={<LawyerLeads />} />
               </Route>
               
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
