@@ -4,7 +4,6 @@ import { Lawyer } from "@/types/lawyer";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, ShieldX } from "lucide-react";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type LawyerDetailsProps = {
   lawyer: Lawyer;
@@ -25,8 +24,7 @@ export const LawyerDetails: React.FC<LawyerDetailsProps> = ({
   onBack,
 }) => {
   const isAdmin = adminEmails.includes(lawyer.email);
-  const isPending = lawyer.status === "pending";
-
+  
   return (
     <Card>
       <CardHeader>
@@ -41,17 +39,6 @@ export const LawyerDetails: React.FC<LawyerDetailsProps> = ({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!isAdmin && isPending && (
-          <Alert>
-            <AlertTitle>Aguardando aprovação</AlertTitle>
-            <AlertDescription>
-              Sua conta está em análise e será avaliada por um especialista em até 24 horas. 
-              Para aumentar suas chances de aprovação, mantenha seu perfil o mais completo possível,
-              incluindo especialidades, biografia profissional e informações de contato.
-            </AlertDescription>
-          </Alert>
-        )}
-
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <h3 className="font-medium">Informações Pessoais</h3>

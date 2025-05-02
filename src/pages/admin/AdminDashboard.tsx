@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
@@ -6,6 +5,7 @@ import { Users, MessageSquare, TrendingUp, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type LeadStatus = "pending" | "contacted" | "converted" | "not_converted";
 
@@ -24,6 +24,9 @@ type Lead = {
   status: LeadStatus;
 };
 
+// Lista de emails administrativos
+const adminEmails = ['admin@jurisquick.com'];
+
 const AdminDashboard: React.FC = () => {
   const { lawyer, user } = useAdminAuth();
   const { toast } = useToast();
@@ -35,6 +38,9 @@ const AdminDashboard: React.FC = () => {
     pendingEvaluation: 0,
   });
   const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
+  
+  const isAdmin = lawyer?.email && adminEmails.includes(lawyer.email);
+  const isPending = lawyer?.status === "pending";
 
   useEffect(() => {
     if (user) {
@@ -161,6 +167,17 @@ const AdminDashboard: React.FC = () => {
           })}
         </div>
       </div>
+
+      {!isAdmin && isPending && (
+        <Alert>
+          <AlertTitle>Aguardando aprovação</AlertTitle>
+          <AlertDescription>
+            Sua conta está em análise e será avaliada por um especialista em até 24 horas. 
+            Para aumentar suas chances de aprovação, mantenha seu perfil o mais completo possível,
+            incluindo especialidades, biografia profissional e informações de contato.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {!lawyer?.plan_type && (
         <Card className="border-orange-200 bg-orange-50">
