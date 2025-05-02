@@ -420,17 +420,7 @@ const AdminLeads: React.FC = () => {
                     </div>
                   )}
                   
-                  {leads.find(l => l.id === openLeadId)?.client_email && (
-                    <div className="text-sm mt-1">
-                      <span className="text-muted-foreground">Email: </span>
-                      <a 
-                        href={`mailto:${leads.find(l => l.id === openLeadId)?.client_email}`}
-                        className="text-juris-accent hover:underline"
-                      >
-                        {leads.find(l => l.id === openLeadId)?.client_email}
-                      </a>
-                    </div>
-                  )}
+                  
                 </div>
                 
                 <Badge className={getStatusLabel(leads.find(l => l.id === openLeadId)?.status || "").color}>
