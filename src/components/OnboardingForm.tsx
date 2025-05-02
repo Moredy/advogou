@@ -12,6 +12,15 @@ const OnboardingForm: React.FC = () => {
   // Definição dos passos com perguntas mais acessíveis
   const steps = [
     {
+      id: 'situacao',
+      question: 'Qual é a sua situação atual?',
+      options: [
+        { id: 'orientacao', label: 'Preciso apenas de orientação jurídica', value: 'orientacao' },
+        { id: 'processo', label: 'Quero entrar com um processo', value: 'processo' },
+        { id: 'citado', label: 'Fui citado em um processo', value: 'citado' }
+      ]
+    },
+    {
       id: 'problema',
       question: 'Qual problema você está enfrentando?',
       options: [
@@ -88,7 +97,7 @@ const OnboardingForm: React.FC = () => {
       [step.id]: option.value
     }));
     
-    // Se for o primeiro passo, armazenar a área técnica correspondente
+    // Se for o segundo passo (problema), armazenar a área técnica correspondente
     if (step.id === 'problema' && 'technicalArea' in option) {
       setTechnicalArea(option.technicalArea as string);
     }
@@ -115,10 +124,20 @@ const OnboardingForm: React.FC = () => {
 
   const getProblemDescription = (): string => {
     // Obter descrição do problema baseado nas seleções
+    const situacao = selections.situacao;
     const problema = selections.problema;
     const detalhe = selections.detalhe;
     
     let descricao = '';
+    
+    // Descrição baseada na situação
+    const situacaoDescricoes: Record<string, string> = {
+      'orientacao': 'preciso apenas de orientação jurídica sobre',
+      'processo': 'desejo entrar com um processo relacionado a',
+      'citado': 'fui citado em um processo envolvendo'
+    };
+    
+    descricao = situacaoDescricoes[situacao] || '';
     
     // Mapeamento de problemas para descrições mais detalhadas
     const problemaDescricoes: Record<string, string> = {
@@ -129,7 +148,7 @@ const OnboardingForm: React.FC = () => {
       'acidente': 'um acidente ou dano sofrido'
     };
     
-    descricao = problemaDescricoes[problema] || 'uma questão jurídica';
+    descricao += ' ' + (problemaDescricoes[problema] || 'uma questão jurídica');
     
     // Adicionar detalhes específicos se disponíveis
     if (detalhe) {
@@ -151,7 +170,7 @@ const OnboardingForm: React.FC = () => {
 
     return `Olá, encontrei seu contato pelo JurisQuick.
 
-Estou com ${problemDesc}.
+${problemDesc.charAt(0).toUpperCase() + problemDesc.slice(1)}.
 A situação é ${urgencia} para mim.
 
 Poderia me ajudar com algumas orientações iniciais, por favor?
