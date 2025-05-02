@@ -24,11 +24,12 @@ const AdminPlans: React.FC = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // Carregar o plano atual do advogado
   useEffect(() => {
     if (lawyer) {
-      setCurrentPlan(lawyer.plan_type);
+      setCurrentPlan(lawyer.plan_type || null);
     }
   }, [lawyer]);
 
@@ -56,9 +57,12 @@ const AdminPlans: React.FC = () => {
       
       if (data) {
         setCurrentPlan(data.plan_type);
+        setIsInitialLoading(false);
       }
     } catch (error) {
       console.error('Erro ao buscar dados do advogado:', error);
+    } finally {
+      setIsInitialLoading(false);
     }
   };
 
@@ -163,10 +167,10 @@ const AdminPlans: React.FC = () => {
 
   // Auto-select the free plan if no plan is selected
   useEffect(() => {
-    if (!currentPlan && user && !loading) {
+    if (!isInitialLoading && user && !currentPlan && !loading) {
       handleSubscribe("free");
     }
-  }, [currentPlan, user]);
+  }, [currentPlan, user, isInitialLoading, loading]);
 
   return (
     <div className="space-y-6">
@@ -185,6 +189,7 @@ const AdminPlans: React.FC = () => {
               ${plan.recommended ? "border-juris-accent shadow-lg" : ""}
               ${plan.disabled ? "opacity-60" : ""}
               ${plan.free ? "border-green-500 shadow-md" : ""}
+              ${currentPlan === plan.id ? "ring-2 ring-green-500" : ""}
             `}
           >
             {plan.recommended && (
@@ -224,10 +229,10 @@ const AdminPlans: React.FC = () => {
                 onClick={() => handleSubscribe(plan.id)} 
                 className="w-full" 
                 variant={plan.free ? "default" : plan.recommended ? "default" : "outline"}
-                disabled={loading !== null || lawyer?.plan_type === plan.id || plan.disabled}
+                disabled={loading !== null || currentPlan === plan.id || plan.disabled}
               >
                 {loading === plan.id ? "Processando..." : 
-                 lawyer?.plan_type === plan.id ? "Plano Atual" : 
+                 currentPlan === plan.id ? "Plano Atual" : 
                  "Assinar Plano"}
               </Button>
             </CardFooter>
