@@ -47,7 +47,7 @@ const Index: React.FC = () => {
             <div className="card-custom">
               <h3 className="text-xl font-medium mb-3 text-white">Valores Tabelados</h3>
               <p className="text-juris-text text-opacity-80">
-                Todos os honorários seguem a tabela da OAB (Ordem dos Advogados do Brasil), garantindo que nenhum advogado cobrará valores abusivos.
+                Todos os honorários seguem a tabela da OAB, garantindo que nenhum advogado cobrará valores abusivos.
               </p>
             </div>
             
