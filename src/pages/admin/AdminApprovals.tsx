@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Shield, ShieldCheck, ShieldX, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin } from "@/integrations/supabase/adminClient"; // Usando o cliente admin
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -38,10 +38,10 @@ const AdminApprovals: React.FC = () => {
   const fetchLawyers = async () => {
     setLoading(true);
     try {
-      console.log("Buscando todos os advogados cadastrados");
+      console.log("Buscando todos os advogados cadastrados (com cliente admin)");
       
-      // Create a query that doesn't filter by the authenticated user
-      const { data, error } = await supabase
+      // Usando o cliente admin para ignorar RLS e obter todos os registros
+      const { data, error } = await supabaseAdmin
         .from('lawyers')
         .select('*')
         .order('created_at', { ascending: false });
@@ -81,8 +81,8 @@ const AdminApprovals: React.FC = () => {
 
   const handleStatusChange = async (lawyerId: string, newStatus: LawyerStatus) => {
     try {
-      // Using the Update interface from Supabase, which now includes status
-      const { error } = await supabase
+      // Também usando o cliente admin para atualizar o status
+      const { error } = await supabaseAdmin
         .from('lawyers')
         .update({ status: newStatus })
         .eq('id', lawyerId);
