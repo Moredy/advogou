@@ -4,12 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session, User, AuthError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 
+type Specialty = {
+  id: string;
+  specialty: string;
+};
+
 type Lawyer = {
   id: string;
   name: string;
   email: string;
   oab_number: string;
-  specialty: string;
+  specialty: string; // Keep for backward compatibility
+  specialties: Specialty[]; // New field for multiple specialties
   plan_type: "basic" | "premium" | "enterprise" | null;
   subscription_active: boolean;
   bio: string | null;
@@ -56,19 +62,38 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
   const fetchLawyerProfile = async (userId: string) => {
     try {
       console.log("Buscando perfil do advogado para o ID:", userId);
-      const { data, error } = await supabase
+      const { data: lawyerData, error: lawyerError } = await supabase
         .from('lawyers')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) {
-        console.error("Erro ao buscar perfil do advogado:", error);
+      if (lawyerError) {
+        console.error("Erro ao buscar perfil do advogado:", lawyerError);
         return;
       }
 
-      console.log("Perfil do advogado encontrado:", data);
-      setLawyer(data as Lawyer);
+      console.log("Perfil do advogado encontrado:", lawyerData);
+      
+      // Now fetch specialties from the new table
+      const { data: specialtiesData, error: specialtiesError } = await supabase
+        .from('lawyer_specialties')
+        .select('id, specialty')
+        .eq('lawyer_id', userId);
+        
+      if (specialtiesError) {
+        console.error("Erro ao buscar especialidades do advogado:", specialtiesError);
+      }
+      
+      console.log("Especialidades do advogado encontradas:", specialtiesData || []);
+      
+      // Combine the lawyer data with specialties
+      const lawyerWithSpecialties = {
+        ...lawyerData,
+        specialties: specialtiesData || []
+      };
+      
+      setLawyer(lawyerWithSpecialties as Lawyer);
     } catch (error) {
       console.error("Erro ao buscar perfil do advogado:", error);
     }

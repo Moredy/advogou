@@ -11,6 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const AdminProfile: React.FC = () => {
   const { lawyer, user, refreshLawyerProfile } = useAdminAuth();
@@ -39,9 +42,14 @@ const AdminProfile: React.FC = () => {
         oab_number: lawyer.oab_number || "",
       });
       
-      // Importante: Garantir que a especialidade seja carregada corretamente
-      if (lawyer.specialty) {
-        console.log("Carregando especialidade do advogado:", lawyer.specialty);
+      // Importante: Garantir que as especialidades sejam carregadas corretamente
+      if (lawyer.specialties && lawyer.specialties.length > 0) {
+        console.log("Carregando especialidades do advogado:", lawyer.specialties);
+        const specialtyValues = lawyer.specialties.map(spec => spec.specialty);
+        setSpecialties(specialtyValues);
+      } else if (lawyer.specialty) {
+        // Fallback para a especialidade única anterior
+        console.log("Usando especialidade legada do advogado:", lawyer.specialty);
         setSpecialties([lawyer.specialty]);
       } else {
         setSpecialties([]);
@@ -107,24 +115,48 @@ const AdminProfile: React.FC = () => {
         throw new Error("Selecione pelo menos uma área de atuação");
       }
       
-      // Pegamos a primeira especialidade da lista
-      const primarySpecialty = specialties[0];
-      console.log("Especialidade principal a ser salva:", primarySpecialty);
+      // Primeiro, deletamos todas as especialidades existentes
+      const { error: deleteError } = await supabase
+        .from('lawyer_specialties')
+        .delete()
+        .eq('lawyer_id', user.id);
+        
+      if (deleteError) {
+        console.error("Erro ao remover especialidades existentes:", deleteError);
+        throw deleteError;
+      }
       
-      const { error } = await supabase
+      // Agora, inserimos as novas especialidades
+      const specialtiesToInsert = specialties.map(specialty => ({
+        lawyer_id: user.id,
+        specialty
+      }));
+      
+      const { error: insertError } = await supabase
+        .from('lawyer_specialties')
+        .insert(specialtiesToInsert);
+        
+      if (insertError) {
+        console.error("Erro ao inserir novas especialidades:", insertError);
+        throw insertError;
+      }
+      
+      // Atualizamos também a especialidade principal no perfil do advogado
+      // para manter compatibilidade com código existente
+      const { error: updateError } = await supabase
         .from('lawyers')
         .update({
-          specialty: primarySpecialty,
+          specialty: specialties[0], // Usamos a primeira especialidade como principal
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
         
-      if (error) {
-        console.error("Erro do Supabase ao salvar especialidade:", error);
-        throw error;
+      if (updateError) {
+        console.error("Erro ao atualizar especialidade principal:", updateError);
+        throw updateError;
       }
       
-      console.log("Especialidade salva com sucesso no Supabase!");
+      console.log("Especialidades salvas com sucesso!");
       
       toast({
         title: "Especialidades atualizadas",

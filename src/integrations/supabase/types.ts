@@ -9,6 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      lawyer_specialties: {
+        Row: {
+          created_at: string
+          id: string
+          lawyer_id: string
+          specialty: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lawyer_id: string
+          specialty: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lawyer_id?: string
+          specialty?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lawyer_specialties_lawyer_id_fkey"
+            columns: ["lawyer_id"]
+            isOneToOne: false
+            referencedRelation: "lawyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lawyers: {
         Row: {
           bio: string | null
