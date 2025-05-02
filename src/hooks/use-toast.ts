@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -168,7 +169,9 @@ function toast({ ...props }: Toast) {
   }
 }
 
+// The key fix is here - we need to create a proper React hook function
 function useToast() {
+  // Define state inside the function
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {
