@@ -13,7 +13,7 @@ const AdminLayout: React.FC = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/admin");
+      navigate("/login");
       return;
     }
 

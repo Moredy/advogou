@@ -16,7 +16,7 @@ const LawyerLayout: React.FC = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/admin");
+      navigate("/login");
     } else if (isAdmin) {
       // Redirect admins to the admin dashboard
       toast({
