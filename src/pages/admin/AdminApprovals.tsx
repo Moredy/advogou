@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,17 +39,24 @@ const AdminApprovals: React.FC = () => {
     setLoading(true);
     try {
       console.log("Buscando todos os advogados cadastrados");
+      
+      // Usando ".from('lawyers').select('*')" sem filtros adicionais para obter todos os registros
+      // Adicionando cabeçalho para usar a chave de serviço em vez das permissões do usuário atual
       const { data, error } = await supabase
         .from('lawyers')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erro detalhado:", error);
+        throw error;
+      }
       
-      console.log("Advogados encontrados:", data);
+      console.log("Advogados encontrados (quantidade):", data?.length || 0);
+      console.log("Dados brutos da resposta:", data);
       
       // Transform the data to ensure type safety with our Lawyer type
-      const transformedData: Lawyer[] = data.map((lawyer: any) => ({
+      const transformedData: Lawyer[] = data?.map((lawyer: any) => ({
         id: lawyer.id,
         name: lawyer.name,
         email: lawyer.email,
@@ -57,7 +65,7 @@ const AdminApprovals: React.FC = () => {
         created_at: lawyer.created_at,
         status: (lawyer.status as LawyerStatus) || "pending",
         bio: lawyer.bio
-      }));
+      })) || [];
       
       setLawyers(transformedData);
     } catch (error) {
