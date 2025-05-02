@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 const AdminLayout: React.FC = () => {
   const { isAuthenticated, user } = useAdminAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
 
   // Lista de emails administrativos
@@ -18,21 +17,22 @@ const AdminLayout: React.FC = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/admin");
-    } else if (location.pathname === '/admin/aprovacoes') {
-      // Check if user email is in the admin list
-      const isAdmin = adminEmails.includes(user?.email || '');
-      
-      if (!isAdmin) {
-        // Notificar o usuário e redirecionar
-        toast({
-          title: "Acesso restrito",
-          description: "Você não tem permissão para acessar essa página.",
-          variant: "destructive"
-        });
-        navigate("/admin/dashboard");
-      }
+      return;
     }
-  }, [isAuthenticated, navigate, location.pathname, user, toast]);
+
+    // Verificar se o usuário é um administrador
+    const isAdmin = adminEmails.includes(user?.email || '');
+    
+    if (!isAdmin) {
+      // Notificar o usuário e redirecionar para o dashboard de advogados
+      toast({
+        title: "Acesso restrito",
+        description: "Você não tem permissão para acessar o painel administrativo.",
+        variant: "destructive"
+      });
+      navigate("/admin/perfil");
+    }
+  }, [isAuthenticated, navigate, user, toast]);
 
   if (!isAuthenticated) {
     return null;
