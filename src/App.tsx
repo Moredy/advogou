@@ -10,12 +10,12 @@ import HowItWorks from "./pages/HowItWorks";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminPlans from "./pages/admin/AdminPlans";
-import AdminProfile from "./pages/admin/AdminProfile";
-import AdminLeads from "./pages/admin/AdminLeads";
+import LawyerDashboard from "./pages/lawyers/LawyerDashboard";
+import LawyerPlans from "./pages/lawyers/LawyerPlans";
+import LawyerProfile from "./pages/lawyers/LawyerProfile";
+import LawyerLeads from "./pages/lawyers/LawyerLeads";
 import AdminApprovals from "./pages/admin/AdminApprovals";
-import AdminLayout from "./components/admin/AdminLayout";
+import LawyerLayout from "./components/lawyers/LawyerLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,11 +37,11 @@ const App = () => (
             <Route path="/como-funciona" element={<HowItWorks />} />
             <Route path="/contato" element={<Contact />} />
             <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="planos" element={<AdminPlans />} />
-              <Route path="perfil" element={<AdminProfile />} />
-              <Route path="leads" element={<AdminLeads />} />
+            <Route path="/admin" element={<LawyerLayout />}>
+              <Route path="dashboard" element={<LawyerDashboard />} />
+              <Route path="planos" element={<LawyerPlans />} />
+              <Route path="perfil" element={<LawyerProfile />} />
+              <Route path="leads" element={<LawyerLeads />} />
               <Route path="aprovacoes" element={<AdminApprovals />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
