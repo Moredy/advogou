@@ -2,7 +2,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import Index from "./pages/Index";
 import HowItWorks from "./pages/HowItWorks";
@@ -27,7 +27,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Convert App to a proper React functional component
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -54,6 +53,9 @@ const App = () => {
                 <Route path="perfil" element={<LawyerProfile />} />
                 <Route path="leads" element={<LawyerLeads />} />
               </Route>
+
+              {/* Redirect /advogado to /advogado/dashboard */}
+              <Route path="/advogado" element={<Navigate replace to="/advogado/dashboard" />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

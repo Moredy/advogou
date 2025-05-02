@@ -7,14 +7,11 @@ import LawyerHeader from "./LawyerHeader";
 import { useToast } from "@/hooks/use-toast";
 
 const LawyerLayout: React.FC = () => {
-  const { isAuthenticated, user, lawyer } = useAdminAuth();
+  const { isAuthenticated, isAdmin, lawyer } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  // Lista de emails administrativos
-  const adminEmails = ['admin@jurisquick.com'];
-  const isAdmin = adminEmails.includes(user?.email || '');
   const isApproved = lawyer?.status === "approved";
 
   useEffect(() => {
@@ -40,7 +37,7 @@ const LawyerLayout: React.FC = () => {
         navigate("/advogado/dashboard");
       }
     }
-  }, [isAuthenticated, navigate, location.pathname, user, toast, isAdmin, lawyer, isApproved]);
+  }, [isAuthenticated, navigate, location.pathname, toast, isAdmin, lawyer, isApproved]);
 
   if (!isAuthenticated) {
     return null;

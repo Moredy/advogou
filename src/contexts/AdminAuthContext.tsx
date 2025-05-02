@@ -7,11 +7,15 @@ import { useLawyerProfile } from "@/hooks/use-lawyer-profile";
 import { useAdminAuthOperations } from "@/hooks/use-admin-auth-operations";
 import { LoadingSpinner } from "@/components/admin/LoadingSpinner";
 
+// Lista de emails administrativos
+const adminEmails = ['admin@jurisquick.com'];
+
 const AdminAuthContext = createContext<AdminAuthContextType>({
   lawyer: null,
   user: null,
   session: null,
   isAuthenticated: false,
+  isAdmin: false,
   login: async () => {},
   logout: async () => {},
   register: async () => {},
@@ -25,6 +29,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
   const { lawyer, setLawyer, fetchLawyerProfile } = useLawyerProfile();
@@ -52,7 +57,11 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         setUser(currentSession?.user ?? null);
         setIsAuthenticated(!!currentSession);
 
+        // Verificar se é admin pelo email
         if (currentSession?.user) {
+          const userEmail = currentSession.user.email;
+          setIsAdmin(userEmail ? adminEmails.includes(userEmail) : false);
+          
           // Usar setTimeout para evitar deadlock no Supabase auth
           setTimeout(() => {
             if (mounted) {
@@ -61,6 +70,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
           }, 0);
         } else {
           setLawyer(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -73,7 +83,10 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       setUser(currentSession?.user ?? null);
       setIsAuthenticated(!!currentSession);
 
+      // Verificar se é admin pelo email
       if (currentSession?.user) {
+        const userEmail = currentSession.user.email;
+        setIsAdmin(userEmail ? adminEmails.includes(userEmail) : false);
         fetchLawyerProfile(currentSession.user.id);
       }
       
@@ -98,7 +111,8 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       lawyer, 
       user, 
       session, 
-      isAuthenticated, 
+      isAuthenticated,
+      isAdmin, 
       login, 
       logout, 
       register, 

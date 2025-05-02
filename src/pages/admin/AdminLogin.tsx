@@ -30,7 +30,7 @@ const registerSchema = z.object({
 });
 
 const AdminLogin: React.FC = () => {
-  const { login, register, isAuthenticated, resetPassword } = useAdminAuth();
+  const { login, register, isAuthenticated, resetPassword, isAdmin } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,9 +63,13 @@ const AdminLogin: React.FC = () => {
   // Redirecionar se já estiver logado
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/admin/dashboard");
+      if (isAdmin) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/advogado/dashboard");
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, isAdmin]);
 
   // Verificar parâmetros de erro na URL
   useEffect(() => {
@@ -98,7 +102,7 @@ const AdminLogin: React.FC = () => {
 
     try {
       await login(values.email, values.password);
-      navigate("/admin/dashboard");
+      // Redirecionamento é feito no useEffect acima
       toast({
         title: "Login efetuado com sucesso",
         description: "Bem-vindo de volta ao JurisQuick",

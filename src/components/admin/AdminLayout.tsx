@@ -7,12 +7,9 @@ import AdminHeader from "./AdminHeader";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminLayout: React.FC = () => {
-  const { isAuthenticated, user } = useAdminAuth();
+  const { isAuthenticated, isAdmin } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Lista de emails administrativos
-  const adminEmails = ['admin@jurisquick.com'];
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,9 +17,6 @@ const AdminLayout: React.FC = () => {
       return;
     }
 
-    // Verificar se o usuário é um administrador
-    const isAdmin = adminEmails.includes(user?.email || '');
-    
     if (!isAdmin) {
       // Notificar o usuário e redirecionar para o dashboard de advogados
       toast({
@@ -32,7 +26,7 @@ const AdminLayout: React.FC = () => {
       });
       navigate("/advogado/dashboard");
     }
-  }, [isAuthenticated, navigate, user, toast]);
+  }, [isAuthenticated, navigate, isAdmin, toast]);
 
   if (!isAuthenticated) {
     return null;

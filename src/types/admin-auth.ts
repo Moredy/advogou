@@ -30,6 +30,7 @@ export interface AdminAuthContextType {
   user: User | null;
   session: Session | null;
   isAuthenticated: boolean;
+  isAdmin: boolean; // Add this property
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (lawyerData: Partial<Lawyer>, password: string) => Promise<void>;
