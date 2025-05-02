@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Header: React.FC = () => {
   return (
@@ -13,18 +14,27 @@ const Header: React.FC = () => {
             </span>
           </Link>
           
-          {/* Add navigation links if needed */}
-          <nav className="hidden md:flex space-x-6">
-            <Link to="/" className="text-juris-text hover:text-white transition-colors">
-              Início
+          <div className="flex items-center space-x-6">
+            {/* Navigation links */}
+            <nav className="hidden md:flex space-x-6 mr-4">
+              <Link to="/" className="text-juris-text hover:text-white transition-colors">
+                Início
+              </Link>
+              <Link to="/como-funciona" className="text-juris-text hover:text-white transition-colors">
+                Como Funciona
+              </Link>
+              <Link to="/contato" className="text-juris-text hover:text-white transition-colors">
+                Contato
+              </Link>
+            </nav>
+            
+            {/* Lawyer login button */}
+            <Link to="/admin">
+              <Button variant="outline" className="border-juris-accent text-juris-accent hover:bg-juris-accent hover:text-white">
+                Sou Advogado
+              </Button>
             </Link>
-            <Link to="/como-funciona" className="text-juris-text hover:text-white transition-colors">
-              Como Funciona
-            </Link>
-            <Link to="/contato" className="text-juris-text hover:text-white transition-colors">
-              Contato
-            </Link>
-          </nav>
+          </div>
         </div>
       </div>
     </header>
