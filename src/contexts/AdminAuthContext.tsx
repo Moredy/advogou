@@ -51,36 +51,51 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+    
     // Configure os listeners de autenticação e verifique a sessão existente
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
+      (event, currentSession) => {
+        if (!mounted) return;
+        
         console.log("Evento de autenticação:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setIsAuthenticated(!!currentSession);
 
         if (currentSession?.user) {
-          await fetchLawyerProfile(currentSession.user.id);
+          // Usar setTimeout para evitar deadlock no Supabase auth
+          setTimeout(() => {
+            if (mounted) {
+              fetchLawyerProfile(currentSession.user.id);
+            }
+          }, 0);
         } else {
           setLawyer(null);
         }
       }
     );
 
-    // Verifique se há uma sessão existente
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+    // Verifique se há uma sessão existente - fora do listener para evitar deadlocks
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (!mounted) return;
+      
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsAuthenticated(!!currentSession);
 
       if (currentSession?.user) {
-        await fetchLawyerProfile(currentSession.user.id);
+        fetchLawyerProfile(currentSession.user.id);
       }
       
+      setIsLoading(false);
+    }).catch(error => {
+      console.error("Erro ao obter sessão:", error);
       setIsLoading(false);
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -207,8 +222,14 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   if (isLoading) {
-    // Você pode adicionar um componente de loading aqui se desejar
-    return <div>Carregando...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-juris-accent mx-auto mb-4"></div>
+          <p className="text-juris-text">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
