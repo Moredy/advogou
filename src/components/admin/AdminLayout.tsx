@@ -30,7 +30,7 @@ const AdminLayout: React.FC = () => {
         description: "Você não tem permissão para acessar o painel administrativo.",
         variant: "destructive"
       });
-      navigate("/admin/perfil");
+      navigate("/advogado/dashboard");
     }
   }, [isAuthenticated, navigate, user, toast]);
 

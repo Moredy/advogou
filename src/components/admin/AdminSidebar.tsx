@@ -1,34 +1,24 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, CreditCard, User, MessageSquare, LogOut, Shield } from "lucide-react";
+import { Home, Shield, LogOut } from "lucide-react";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { cn } from "@/lib/utils";
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  const { logout, user } = useAdminAuth();
-
-  // Verificar se o usuário é um administrador
-  const isAdmin = user?.email === 'admin@jurisquick.com';
+  const { logout } = useAdminAuth();
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
-  // Lista base de itens do menu
-  const baseMenuItems = [
+  // Menu items for admins
+  const adminMenuItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: <Home size={20} /> },
-    { name: "Planos", path: "/admin/planos", icon: <CreditCard size={20} /> },
-    { name: "Meu Perfil", path: "/admin/perfil", icon: <User size={20} /> },
-    { name: "Leads Recebidos", path: "/admin/leads", icon: <MessageSquare size={20} /> },
+    { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> },
   ];
   
-  // Adicionar item de validação de advogados apenas se for admin
-  const menuItems = isAdmin 
-    ? [...baseMenuItems, { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> }]
-    : baseMenuItems;
-
   return (
     <div className="w-64 min-h-screen bg-juris-dark text-white">
       <div className="p-4">
@@ -39,7 +29,7 @@ const AdminSidebar: React.FC = () => {
         </Link>
 
         <nav className="space-y-1">
-          {menuItems.map((item) => (
+          {adminMenuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}

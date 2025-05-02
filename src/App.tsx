@@ -48,7 +48,7 @@ const App = () => {
               </Route>
               
               {/* Lawyer routes */}
-              <Route path="/admin" element={<LawyerLayout />}>
+              <Route path="/advogado" element={<LawyerLayout />}>
                 <Route path="dashboard" element={<LawyerDashboard />} />
                 <Route path="planos" element={<LawyerPlans />} />
                 <Route path="perfil" element={<LawyerProfile />} />

@@ -20,37 +20,24 @@ const LawyerLayout: React.FC = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/admin");
+    } else if (isAdmin) {
+      // Redirect admins to the admin dashboard
+      toast({
+        title: "Redirecionando",
+        description: "Você está sendo redirecionado para o painel de administrador.",
+        variant: "default"
+      });
+      navigate("/admin/dashboard");
     } else {
-      // Redirecionar admins tentando acessar páginas que não deveriam
-      if (isAdmin) {
-        const forbiddenPaths = ['/admin/planos', '/admin/perfil', '/admin/leads'];
-        if (forbiddenPaths.some(path => location.pathname.startsWith(path))) {
-          toast({
-            title: "Acesso restrito",
-            description: "Esta página não está disponível para administradores.",
-            variant: "destructive"
-          });
-          navigate("/admin/dashboard");
-        }
-      } else {
-        // Verificações para advogados não-admin
-        if (location.pathname === '/admin/aprovacoes') {
-          // Não-admins tentando acessar página de aprovações
-          toast({
-            title: "Acesso restrito",
-            description: "Você não tem permissão para acessar essa página.",
-            variant: "destructive"
-          });
-          navigate("/admin/dashboard");
-        } else if (!isApproved && location.pathname === '/admin/leads') {
-          // Advogados não aprovados tentando acessar a página de leads
-          toast({
-            title: "Acesso restrito",
-            description: "Você precisa ter sua conta aprovada para acessar os leads.",
-            variant: "destructive"
-          });
-          navigate("/admin/dashboard");
-        }
+      // Verificações para advogados não-admin
+      if (!isApproved && location.pathname === '/advogado/leads') {
+        // Advogados não aprovados tentando acessar a página de leads
+        toast({
+          title: "Acesso restrito",
+          description: "Você precisa ter sua conta aprovada para acessar os leads.",
+          variant: "destructive"
+        });
+        navigate("/advogado/dashboard");
       }
     }
   }, [isAuthenticated, navigate, location.pathname, user, toast, isAdmin, lawyer, isApproved]);
