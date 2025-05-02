@@ -6,10 +6,8 @@ import type { Database } from './types';
 
 const SUPABASE_URL = "https://jkmsxsklehovlvhfbazh.supabase.co";
 // Atenção: Esta chave deve ser a chave de serviço (service_role), não a chave anônima
-// Na implementação real, esta chave deve estar em uma variável de ambiente segura
 const SUPABASE_ADMIN_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImprbXN4c2tsZWhvdmx2aGZiYXpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjE5OTg5MCwiZXhwIjoyMDYxNzc1ODkwfQ.4qjnAyfa3zZQIVGsY1CLeSIJI8kymf640inL492rLe8";
 
-// Criando o cliente admin com configurações corretas
 export const supabaseAdmin = createClient<Database>(
   SUPABASE_URL, 
   SUPABASE_ADMIN_KEY,
@@ -17,11 +15,17 @@ export const supabaseAdmin = createClient<Database>(
     auth: {
       autoRefreshToken: false,
       persistSession: false
+    },
+    global: {
+      headers: {
+        'apikey': SUPABASE_ADMIN_KEY,
+        'Authorization': `Bearer ${SUPABASE_ADMIN_KEY}`
+      }
     }
   }
 );
 
-// Função utilitária para depuração de cabeçalhos sem acessar diretamente propriedades protegidas
+// Função utilitária para depuração de cabeçalhos
 export const getAuthHeaders = () => ({
   'Authorization': `Bearer ${SUPABASE_ADMIN_KEY}`,
   'apikey': SUPABASE_ADMIN_KEY
