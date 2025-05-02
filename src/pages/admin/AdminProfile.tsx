@@ -18,7 +18,7 @@ const AdminProfile: React.FC = () => {
     name: lawyer?.name || "",
     email: lawyer?.email || "",
     phone: "",
-    oabNumber: lawyer?.oabNumber || "",
+    oabNumber: lawyer?.oab_number || "", // Changed from oabNumber to oab_number to match the Lawyer type
   });
   
   const [specialties, setSpecialties] = useState<string[]>([

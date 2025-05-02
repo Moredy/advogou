@@ -7,14 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+type LeadStatus = "pending" | "contacted" | "converted" | "not_converted";
+
 type DashboardStats = {
   leadsReceived: number;
   leadsConvertidos: number;
   conversion: number;
   pendingEvaluation: number;
 };
-
-type LeadStatus = 'pending' | 'contacted' | 'converted' | 'not_converted';
 
 type Lead = {
   id: string;
@@ -79,7 +79,13 @@ const AdminDashboard: React.FC = () => {
 
       if (recentLeadsError) throw recentLeadsError;
 
-      setRecentLeads(recentLeadsData || []);
+      // Cast the status to ensure it matches the LeadStatus type
+      if (recentLeadsData) {
+        setRecentLeads(recentLeadsData.map(lead => ({
+          ...lead,
+          status: lead.status as LeadStatus
+        })));
+      }
 
     } catch (error) {
       console.error('Erro ao buscar dados do dashboard:', error);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,13 +11,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Loader2 } from "lucide-react";
 
+type LeadStatus = "pending" | "contacted" | "converted" | "not_converted";
+
 type Lead = {
   id: string;
   client_name: string;
   case_area: string;
   created_at: string;
   description: string;
-  status: "pending" | "contacted" | "converted" | "not_converted";
+  status: LeadStatus;
   quality_rating?: number;
   relevant?: boolean;
   comments?: string;
@@ -59,7 +60,13 @@ const AdminLeads: React.FC = () => {
         throw error;
       }
 
-      setLeads(data || []);
+      // Cast the status to ensure it matches the LeadStatus type
+      if (data) {
+        setLeads(data.map(lead => ({
+          ...lead,
+          status: lead.status as LeadStatus
+        })));
+      }
     } catch (error) {
       console.error('Erro ao carregar leads:', error);
       toast({
@@ -129,7 +136,7 @@ const AdminLeads: React.FC = () => {
     setOpenLeadId(null);
   };
 
-  const handleUpdateStatus = async (leadId: string, status: Lead['status']) => {
+  const handleUpdateStatus = async (leadId: string, status: LeadStatus) => {
     if (!user) return;
 
     try {
