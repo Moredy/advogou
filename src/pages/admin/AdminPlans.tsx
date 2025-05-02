@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
-type PlanType = "free" | "basic" | "premium" | "enterprise";
+type PlanType = "free" | "basic" | "premium";
 
 type Plan = {
   id: PlanType;
@@ -15,7 +15,8 @@ type Plan = {
   price: number;
   description: string;
   features: string[];
-  leadsPerMonth: number;
+  leadsPerMonth: number | string;
+  badge: string;
   recommended?: boolean;
   disabled?: boolean;
   free?: boolean;
@@ -31,7 +32,7 @@ const AdminPlans: React.FC = () => {
   // Carregar o plano atual do advogado
   useEffect(() => {
     if (lawyer) {
-      setCurrentPlan(lawyer.plan_type || null);
+      setCurrentPlan(lawyer.plan_type as PlanType || null);
       setIsInitialLoading(false);
     }
   }, [lawyer]);
@@ -74,57 +75,40 @@ const AdminPlans: React.FC = () => {
       id: "free",
       name: "Gratuito",
       price: 0,
-      description: "Para advogados que querem conhecer nossa plataforma.",
+      badge: "🟩",
+      description: "Acesso a leads de todos os tipos",
       features: [
-        "1 lead qualificado por mês",
-        "Perfil na plataforma",
-        "Suporte por e-mail"
+        "Limite de 5 leads por mês"
       ],
-      leadsPerMonth: 1,
+      leadsPerMonth: 5,
       free: true
     },
     {
       id: "basic",
       name: "Básico",
       price: 249,
-      description: "Para advogados iniciantes que querem expandir sua base de clientes.",
+      badge: "🟦",
+      description: "Prioridade no recebimento de até 10 leads por mês",
       features: [
-        "5 leads qualificados por mês",
-        "Perfil na plataforma",
-        "Suporte por e-mail"
+        "Leads com maior intenção:",
+        "Pessoas que estão para entrar com processo",
+        "Pessoas que foram citadas em processos"
       ],
-      leadsPerMonth: 5,
-      disabled: true
+      leadsPerMonth: 10
     },
     {
       id: "premium",
       name: "Premium",
       price: 499,
-      description: "Para advogados estabelecidos que buscam crescimento constante.",
+      badge: "🟨",
+      description: "Prioridade máxima, sem limite de leads",
       features: [
-        "15 leads qualificados por mês",
-        "Perfil destacado na plataforma",
-        "Suporte prioritário",
-        "Análise mensal de conversão"
+        "Leads com alta intenção:",
+        "Pessoas que estão para entrar com processo",
+        "Pessoas que foram citadas em processos"
       ],
-      leadsPerMonth: 15,
-      recommended: true,
-      disabled: true
-    },
-    {
-      id: "enterprise",
-      name: "Enterprise",
-      price: 899,
-      description: "Para escritórios com alta demanda por novos casos.",
-      features: [
-        "30 leads qualificados por mês",
-        "Perfil premium na plataforma",
-        "Suporte dedicado",
-        "Análise semanal de conversão",
-        "Exclusividade em área de atuação"
-      ],
-      leadsPerMonth: 30,
-      disabled: true
+      leadsPerMonth: "Ilimitado",
+      recommended: true
     }
   ];
 
@@ -185,35 +169,27 @@ const AdminPlans: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Planos de Assinatura</h1>
+        <h1 className="text-2xl font-semibold">Planos Disponíveis</h1>
         <p className="text-muted-foreground mt-1">
-          Experimente nossa plataforma gratuitamente. Planos pagos serão liberados em breve.
+          Escolha o plano que melhor se adapta às suas necessidades.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => (
           <Card 
             key={plan.id} 
             className={`
               ${plan.recommended ? "border-juris-accent shadow-lg" : ""}
-              ${plan.disabled ? "opacity-60" : ""}
               ${plan.free ? "border-green-500 shadow-md" : ""}
               ${currentPlan === plan.id ? "ring-2 ring-green-500" : ""}
             `}
           >
-            {plan.recommended && (
-              <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-juris-accent text-white text-xs font-semibold px-3 py-1 rounded-full">
-                Recomendado
-              </div>
-            )}
-            {plan.free && (
-              <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                Grátis
-              </div>
-            )}
             <CardHeader>
-              <CardTitle>{plan.name}</CardTitle>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">{plan.badge}</span>
+                <CardTitle>{plan.name}</CardTitle>
+              </div>
               <CardDescription>{plan.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -223,12 +199,14 @@ const AdminPlans: React.FC = () => {
               </div>
               
               <div>
-                <p className="text-sm font-medium mb-2">Inclui:</p>
                 <ul className="space-y-2">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-green-500" />
-                      {feature}
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      {i === 0 || (plan.id !== "free" && i > 0) ? 
+                        <Check className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" /> : 
+                        <div className="w-4 ml-6"></div>
+                      }
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -239,7 +217,6 @@ const AdminPlans: React.FC = () => {
                 onClick={() => handleSubscribe(plan.id)} 
                 className="w-full" 
                 variant={plan.free ? "default" : plan.recommended ? "default" : "outline"}
-                disabled={loading !== null || plan.disabled}
               >
                 {loading === plan.id ? "Processando..." : 
                  currentPlan === plan.id ? "Plano Atual" : 
@@ -266,9 +243,9 @@ const AdminPlans: React.FC = () => {
             </p>
           </div>
           <div>
-            <h3 className="font-medium">Quando os planos pagos estarão disponíveis?</h3>
+            <h3 className="font-medium">O que são leads com maior intenção?</h3>
             <p className="text-sm text-gray-600 mt-1">
-              Estamos em fase de testes e em breve liberaremos os planos pagos. Enquanto isso, você pode utilizar o plano gratuito para conhecer a plataforma.
+              São pessoas que demonstram intenção clara de iniciar um processo judicial ou que já foram citadas em processos, representando oportunidades de maior potencial para conversão.
             </p>
           </div>
         </div>
