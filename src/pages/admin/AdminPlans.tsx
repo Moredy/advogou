@@ -22,7 +22,7 @@ type Plan = {
 };
 
 const AdminPlans: React.FC = () => {
-  const { lawyer, user } = useAdminAuth();
+  const { lawyer, user, refreshLawyerProfile } = useAdminAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
   const [currentPlan, setCurrentPlan] = useState<PlanType | null>(null);
@@ -32,6 +32,7 @@ const AdminPlans: React.FC = () => {
   useEffect(() => {
     if (lawyer) {
       setCurrentPlan(lawyer.plan_type || null);
+      setIsInitialLoading(false);
     }
   }, [lawyer]);
 
@@ -133,8 +134,10 @@ const AdminPlans: React.FC = () => {
     setLoading(planId);
 
     try {
+      console.log(`Tentando assinar plano: ${planId} para usuário: ${user.id}`);
+      
       // Atualizar o plano do advogado no Supabase
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('lawyers')
         .update({
           plan_type: planId,
@@ -148,16 +151,17 @@ const AdminPlans: React.FC = () => {
         throw error;
       }
 
+      console.log('Plano atualizado com sucesso:', data);
+      
       setCurrentPlan(planId);
+      
+      // Atualizar o perfil do advogado no contexto
+      await refreshLawyerProfile();
       
       toast({
         title: "Plano assinado com sucesso!",
         description: `Você assinou o plano ${plans.find(p => p.id === planId)?.name}. Você começará a receber leads em breve.`,
       });
-
-      // Atualizar os dados do advogado
-      await fetchLawyerData();
-      
     } catch (error) {
       console.error('Erro ao assinar plano:', error);
       toast({
@@ -173,6 +177,7 @@ const AdminPlans: React.FC = () => {
   // Auto-select the free plan if no plan is selected
   useEffect(() => {
     if (!isInitialLoading && user && !currentPlan && !loading) {
+      console.log("Auto-selecionando plano gratuito");
       handleSubscribe("free");
     }
   }, [currentPlan, user, isInitialLoading, loading]);
@@ -234,7 +239,7 @@ const AdminPlans: React.FC = () => {
                 onClick={() => handleSubscribe(plan.id)} 
                 className="w-full" 
                 variant={plan.free ? "default" : plan.recommended ? "default" : "outline"}
-                disabled={loading !== null || currentPlan === plan.id || plan.disabled}
+                disabled={loading !== null || plan.disabled}
               >
                 {loading === plan.id ? "Processando..." : 
                  currentPlan === plan.id ? "Plano Atual" : 
