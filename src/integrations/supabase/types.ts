@@ -49,6 +49,7 @@ export type Database = {
           phone: string | null
           plan_type: string | null
           specialty: string
+          status: string | null
           subscription_active: boolean | null
           updated_at: string
         }
@@ -62,6 +63,7 @@ export type Database = {
           phone?: string | null
           plan_type?: string | null
           specialty: string
+          status?: string | null
           subscription_active?: boolean | null
           updated_at?: string
         }
@@ -75,6 +77,7 @@ export type Database = {
           phone?: string | null
           plan_type?: string | null
           specialty?: string
+          status?: string | null
           subscription_active?: boolean | null
           updated_at?: string
         }

@@ -45,10 +45,16 @@ const AdminApprovals: React.FC = () => {
 
       if (error) throw error;
       
-      // Transform the data to include status field (which might not exist yet in the database)
+      // Transform the data to ensure type safety with our Lawyer type
       const transformedData: Lawyer[] = data.map((lawyer: any) => ({
-        ...lawyer,
-        status: lawyer.status || "pending"
+        id: lawyer.id,
+        name: lawyer.name,
+        email: lawyer.email,
+        oab_number: lawyer.oab_number,
+        specialty: lawyer.specialty,
+        created_at: lawyer.created_at,
+        status: (lawyer.status as LawyerStatus) || "pending",
+        bio: lawyer.bio
       }));
       
       setLawyers(transformedData);
@@ -66,6 +72,7 @@ const AdminApprovals: React.FC = () => {
 
   const handleStatusChange = async (lawyerId: string, newStatus: LawyerStatus) => {
     try {
+      // Using the Update interface from Supabase, which now includes status
       const { error } = await supabase
         .from('lawyers')
         .update({ status: newStatus })
