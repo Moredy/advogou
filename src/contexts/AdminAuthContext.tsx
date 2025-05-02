@@ -22,6 +22,7 @@ interface AdminAuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (lawyerData: Partial<Lawyer>, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType>({
@@ -32,6 +33,7 @@ const AdminAuthContext = createContext<AdminAuthContextType>({
   login: async () => {},
   logout: async () => {},
   register: async () => {},
+  resetPassword: async () => {},
 });
 
 export const useAdminAuth = () => useContext(AdminAuthContext);
@@ -48,6 +50,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // Configure os listeners de autenticação e verifique a sessão existente
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log("Evento de autenticação:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setIsAuthenticated(!!currentSession);
@@ -153,6 +156,11 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       if (error) throw error;
 
+      toast({
+        title: "Cadastro realizado com sucesso",
+        description: data.user ? "Verifique seu e-mail para confirmar seu cadastro." : "Sua conta foi criada com sucesso.",
+      });
+      
       // O trigger no Supabase vai criar automaticamente um registro na tabela lawyers
       // quando o usuário é criado no auth.users
     } catch (error) {
@@ -172,13 +180,44 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/admin/reset-password',
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "E-mail enviado",
+        description: "Instruções para redefinir sua senha foram enviadas para seu e-mail."
+      });
+    } catch (error) {
+      console.error("Erro ao enviar e-mail de recuperação:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar o e-mail de recuperação de senha.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (isLoading) {
     // Você pode adicionar um componente de loading aqui se desejar
     return <div>Carregando...</div>;
   }
 
   return (
-    <AdminAuthContext.Provider value={{ lawyer, user, session, isAuthenticated, login, logout, register }}>
+    <AdminAuthContext.Provider value={{ 
+      lawyer, 
+      user, 
+      session, 
+      isAuthenticated, 
+      login, 
+      logout, 
+      register, 
+      resetPassword 
+    }}>
       {children}
     </AdminAuthContext.Provider>
   );

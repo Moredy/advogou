@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
@@ -31,7 +30,7 @@ const registerSchema = z.object({
 });
 
 const AdminLogin: React.FC = () => {
-  const { login, register, isAuthenticated } = useAdminAuth();
+  const { login, register, isAuthenticated, resetPassword } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,12 +56,42 @@ const AdminLogin: React.FC = () => {
     },
   });
 
+  const [activeTab, setActiveTab] = useState("login");
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+
   // Redirecionar se já estiver logado
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/admin/dashboard");
     }
   }, [isAuthenticated, navigate]);
+
+  // Verificar parâmetros de erro na URL
+  useEffect(() => {
+    const hashParams = window.location.hash.substring(1).split('&').reduce((acc, item) => {
+      const [key, value] = item.split('=');
+      acc[key] = decodeURIComponent(value);
+      return acc;
+    }, {} as Record<string, string>);
+
+    if (hashParams.error) {
+      let errorMessage = "Ocorreu um erro durante a autenticação.";
+      
+      if (hashParams.error_code === "otp_expired" || hashParams.error_description?.includes("Email link is invalid or has expired")) {
+        errorMessage = "O link de confirmação expirou ou é inválido. Por favor, solicite um novo.";
+      }
+      
+      toast({
+        title: "Erro de autenticação",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      
+      // Limpar os parâmetros de erro da URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, [toast]);
 
   const handleLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsSubmitting(true);
@@ -115,6 +144,85 @@ const AdminLogin: React.FC = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recoveryEmail) {
+      toast({
+        title: "Erro",
+        description: "Por favor, informe seu e-mail.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await resetPassword(recoveryEmail);
+      setIsForgotPassword(false);
+      setActiveTab("login");
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar o e-mail de recuperação.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Renderizar o formulário de recuperação de senha
+  if (isForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-juris-dark to-black flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Juris<span className="text-juris-accent">Quick</span>
+            </h1>
+            <p className="text-gray-400">Recuperação de Senha</p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center">Esqueceu sua senha?</CardTitle>
+              <CardDescription className="text-center">
+                Digite seu e-mail para receber um link de recuperação
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="recovery-email">E-mail</Label>
+                  <Input
+                    id="recovery-email"
+                    type="email"
+                    value={recoveryEmail}
+                    onChange={(e) => setRecoveryEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Enviando..." : "Enviar link de recuperação"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsForgotPassword(false)}
+                  disabled={isSubmitting}
+                >
+                  Voltar ao login
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-juris-dark to-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -133,7 +241,7 @@ const AdminLogin: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Cadastro</TabsTrigger>
@@ -166,7 +274,17 @@ const AdminLogin: React.FC = () => {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Senha</FormLabel>
+                          <div className="flex justify-between items-center">
+                            <FormLabel>Senha</FormLabel>
+                            <Button
+                              type="button"
+                              variant="link"
+                              className="p-0 h-auto font-normal text-xs"
+                              onClick={() => setIsForgotPassword(true)}
+                            >
+                              Esqueceu a senha?
+                            </Button>
+                          </div>
                           <FormControl>
                             <Input
                               {...field}
