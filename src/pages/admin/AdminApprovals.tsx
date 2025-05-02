@@ -28,6 +28,7 @@ const AdminApprovals: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [lawyers, setLawyers] = useState<Lawyer[]>([]);
   const [selectedLawyer, setSelectedLawyer] = useState<Lawyer | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -37,8 +38,13 @@ const AdminApprovals: React.FC = () => {
 
   const fetchLawyers = async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       console.log("Buscando todos os advogados cadastrados (com cliente admin)");
+      
+      // Verificando e mostrando os cabeçalhos para depuração
+      const headers = supabaseAdmin.rest.headers;
+      console.log("Cabeçalhos usados na requisição:", headers);
       
       // Usando o cliente admin para ignorar RLS e obter todos os registros
       const { data, error } = await supabaseAdmin
@@ -48,6 +54,7 @@ const AdminApprovals: React.FC = () => {
 
       if (error) {
         console.error("Erro detalhado:", error);
+        setFetchError(`Erro ao buscar advogados: ${error.message}`);
         throw error;
       }
       
@@ -164,6 +171,13 @@ const AdminApprovals: React.FC = () => {
         </Button>
       </div>
 
+      {fetchError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md mb-4">
+          <p className="font-medium">Erro ao carregar dados</p>
+          <p className="text-sm">{fetchError}</p>
+        </div>
+      )}
+
       {selectedLawyer ? (
         
         <Card>
@@ -267,7 +281,7 @@ const AdminApprovals: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-6 text-muted-foreground">
-                Nenhum advogado encontrado.
+                {fetchError ? "Erro ao buscar dados." : "Nenhum advogado encontrado."}
               </div>
             )}
           </CardContent>

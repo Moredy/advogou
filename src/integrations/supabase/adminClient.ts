@@ -9,7 +9,7 @@ const SUPABASE_URL = "https://jkmsxsklehovlvhfbazh.supabase.co";
 // Na implementação real, esta chave deve estar em uma variável de ambiente segura
 const SUPABASE_ADMIN_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImprbXN4c2tsZWhvdmx2aGZiYXpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjE5OTg5MCwiZXhwIjoyMDYxNzc1ODkwfQ.4qjnAyfa3zZQIVGsY1CLeSIJI8kymf640inL492rLe8";
 
-// Corrigindo a criação do cliente admin para autenticar corretamente com a service_role
+// Criando o cliente admin com configurações específicas para garantir que esteja usando a service_role
 export const supabaseAdmin = createClient<Database>(
   SUPABASE_URL, 
   SUPABASE_ADMIN_KEY,
@@ -17,6 +17,13 @@ export const supabaseAdmin = createClient<Database>(
     auth: {
       autoRefreshToken: false,
       persistSession: false
+    },
+    global: {
+      headers: {
+        // Garantir que estamos enviando os cabeçalhos corretos
+        'Authorization': `Bearer ${SUPABASE_ADMIN_KEY}`,
+        'apikey': SUPABASE_ADMIN_KEY
+      }
     }
   }
 );
