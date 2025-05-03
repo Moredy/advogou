@@ -1,5 +1,4 @@
 
-import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
 // Como estamos em um contexto de API, podemos usar service role key
@@ -9,9 +8,12 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'default-service-key'
 );
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return {
+      status: 405, 
+      body: { error: 'Method not allowed' }
+    };
   }
 
   try {
@@ -25,12 +27,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
     if (error) {
       console.error('Erro ao criar lead:', error);
-      return res.status(500).json({ error: error.message });
+      return {
+        status: 500,
+        body: { error: error.message }
+      };
     }
     
-    return res.status(200).json(data);
+    return {
+      status: 200,
+      body: data
+    };
   } catch (err) {
     console.error('Erro na API create-lead:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return {
+      status: 500,
+      body: { error: 'Internal server error' }
+    };
   }
 }
