@@ -151,6 +151,7 @@ const OnboardingForm: React.FC = () => {
         .select('id, email, specialty')
         .eq('status', 'approved')  // Somente advogados aprovados pelo admin
         .eq('subscription_active', true)  // Com assinatura ativa
+        .neq('email', 'admin@jurisquick.com')  // Excluir o email do administrador
         .order('created_at', { ascending: false });  // Priorizar os mais recentes
       
       if (queryError) {
