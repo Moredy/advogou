@@ -45,13 +45,13 @@ const AdminLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <AdminHeader toggleSidebar={toggleSidebar} />
-      <div className="flex relative">
-        <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block ${isMobile && sidebarOpen ? 'absolute z-50 h-[calc(100vh-64px)]' : ''}`}>
+      <div className="flex flex-1 relative">
+        <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block ${isMobile && sidebarOpen ? 'fixed z-50 h-[calc(100vh-64px)]' : 'sticky top-0 h-[calc(100vh-64px)]'}`}>
           <AdminSidebar closeSidebar={() => isMobile && setSidebarOpen(false)} />
         </div>
-        <main className={`flex-1 p-4 md:p-6 transition-all duration-200 ${sidebarOpen && isMobile ? 'opacity-30' : ''}`}>
+        <main className={`flex-1 p-4 md:p-6 overflow-x-hidden transition-all duration-200 ${sidebarOpen && isMobile ? 'opacity-30' : ''}`}>
           <Outlet />
         </main>
       </div>

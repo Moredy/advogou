@@ -257,7 +257,7 @@ const LawyerProfile: React.FC = () => {
       </div>
       
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-1">
           <TabsTrigger value="personal">Informações Pessoais</TabsTrigger>
           <TabsTrigger value="specialties">Áreas de Atuação</TabsTrigger>
           <TabsTrigger value="bio">Biografia</TabsTrigger>
