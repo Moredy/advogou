@@ -122,7 +122,7 @@ const AdminLogin: React.FC = () => {
       // Redirecionamento é feito no useEffect acima
       toast({
         title: "Login efetuado com sucesso",
-        description: "Bem-vindo de volta ao JurisQuick",
+        description: "Bem-vindo de volta ao Advogou",
       });
     } catch (error) {
       toast({

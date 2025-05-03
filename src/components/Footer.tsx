@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-juris-text text-opacity-70 text-sm">
-              © {year} JurisQuick. Todos os direitos reservados.
+              © {year} Advogou. Todos os direitos reservados.
             </p>
           </div>
           <div className="flex space-x-6">

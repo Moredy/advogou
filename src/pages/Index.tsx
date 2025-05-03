@@ -21,7 +21,7 @@ const Index: React.FC = () => {
             Conectamos você ao advogado ideal
           </h1>
           <p className="text-lg md:text-xl max-w-3xl mx-auto text-juris-text text-opacity-90">
-            Você precisa de ajuda com uma questão jurídica? Responda algumas perguntas rápidas e vamos registrar sua solicitação para um advogado especializado, com uma mensagem personalizada pronta para ser enviada.
+            Você precisa de ajuda com uma questão jurídica? Responda algumas perguntas e receba o contato de um advogado especializado.
           </p>
         </motion.div>
         
@@ -40,7 +40,7 @@ const Index: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <h2 className="text-2xl md:text-3xl font-medium mb-6 text-white">
-            Por que usar o JurisQuick?
+            Por que usar o Advogou?
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
