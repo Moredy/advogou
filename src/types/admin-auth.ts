@@ -20,6 +20,7 @@ export type Lawyer = {
   subscription_active: boolean;
   bio: string | null;
   phone: string | null;
+  gender?: string | null;
   status: LawyerStatus; // Add the status property using LawyerStatus type
   created_at?: string;
   updated_at?: string;
