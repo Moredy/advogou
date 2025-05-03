@@ -396,25 +396,26 @@ Obrigado.`;
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex space-x-2">
-          {steps.map((_, index) => (
-            <div
-              key={index}
-              className={`h-2 w-10 rounded-full ${index <= currentStep ? 'bg-juris-accent' : 'bg-white bg-opacity-20'
-                }`}
-            />
-          ))}
-        </div>
-        {currentStep > 0 && currentStep < steps.length && (
-          <button
-            onClick={() => setCurrentStep(prev => prev - 1)}
-            className="text-sm text-juris-text text-opacity-70 hover:text-opacity-100"
-          >
-            Voltar
-          </button>
-        )}
-      </div>
+<div className="mb-6 px-4">
+  <div className="flex space-x-2 justify-center mb-2">
+    {steps.map((_, index) => (
+      <div
+        key={index}
+        className={`h-2 w-10 rounded-full ${index <= currentStep ? 'bg-juris-accent' : 'bg-white bg-opacity-20'}`}
+      />
+    ))}
+  </div>
+  {currentStep > 0 && currentStep < steps.length && (
+    <div className="text-right">
+      <button
+        onClick={() => setCurrentStep(prev => prev - 1)}
+        className="text-sm text-juris-text text-opacity-70 hover:text-opacity-100"
+      >
+        Voltar
+      </button>
+    </div>
+  )}
+</div>
 
       {currentStep < steps.length && (
         <div className="animate-fade-in step-transition">
