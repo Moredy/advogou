@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -19,6 +18,8 @@ interface ContactInfo {
 
 // Lista de emails administrativos - para evitar que leads sejam direcionados a administradores
 const adminEmails = ['admin@jurisquick.com'];
+// ID de lead temporário para casos sem advogados disponíveis
+const ADMIN_FALLBACK_ID = '00000000-0000-0000-0000-000000000000';
 
 const OnboardingForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -150,47 +151,31 @@ const OnboardingForm: React.FC = () => {
       // Encontrar um advogado para o lead
       const areaName = getAreaName();
       
-      console.log("DEBUG - Verificando a estrutura exata da query e as colunas");
-      
-      // Query sem filtro nenhum e com select básico para garantir compatibilidade
-      console.log("Tentando consulta básica sem filtros e colunas mínimas");
-      const { data: basicLawyers, error: basicError } = await supabase
+      // Consulta básica para verificar se existem advogados no sistema
+      const { data: lawyers, error: queryError } = await supabase
         .from('lawyers')
-        .select('id');
+        .select('id')
+        .limit(1);
       
-      console.log("Resultado da consulta básica:", basicLawyers?.length || 0);
-      if (basicError) {
-        console.error("Erro na consulta básica:", basicError);
-      }
-      
-      // ALTERAÇÃO: Consulta simplificada verificando coluna a coluna
-      const { data: allLawyers, error: lawyersError } = await supabase
-        .from('lawyers')
-        .select('id, email');
-
-      if (lawyersError) {
-        console.error('Erro ao buscar advogados (consulta simplificada):', lawyersError);
-        throw lawyersError;
-      }
-
-      console.log("Total de advogados encontrados (consulta simplificada):", allLawyers?.length || 0);
-      if (allLawyers) {
-        console.log("Lista simplificada de advogados:", allLawyers);
+      if (queryError) {
+        console.error('Erro ao consultar advogados:', queryError);
+        throw queryError;
       }
 
       let selectedLawyerId: string;
       
-      if (!allLawyers || allLawyers.length === 0) {
-        console.log("Não há advogados cadastrados no sistema");
+      // Se não houver advogados, usamos um ID administrativo temporário
+      if (!lawyers || lawyers.length === 0) {
+        console.log("Nenhum advogado encontrado no sistema, usando ID de fallback administrativo");
         setNoLawyersAvailable(true);
-        throw new Error('Nenhum advogado disponível no sistema');
+        selectedLawyerId = ADMIN_FALLBACK_ID;
+      } else {
+        // Se houver advogados, usamos o primeiro da lista
+        selectedLawyerId = lawyers[0].id;
+        console.log("Advogado selecionado:", selectedLawyerId);
       }
-      
-      // Selecionamos o primeiro advogado disponível
-      selectedLawyerId = allLawyers[0].id;
-      console.log("Advogado selecionado:", selectedLawyerId);
 
-      // Criar o lead
+      // Criar o lead mesmo sem advogado disponível
       await createLead(selectedLawyerId, data, areaName);
       setLawyerId(selectedLawyerId);
       
@@ -198,20 +183,19 @@ const OnboardingForm: React.FC = () => {
       setCurrentStep(steps.length);
       
       toast({
-        title: "Advogado encontrado!",
-        description: "Um profissional foi notificado sobre sua solicitação.",
+        title: noLawyersAvailable ? "Solicitação registrada!" : "Advogado encontrado!",
+        description: noLawyersAvailable 
+          ? "Um administrador revisará sua solicitação em breve." 
+          : "Um profissional foi notificado sobre sua solicitação.",
       });
     } catch (error) {
       console.error('Erro ao processar lead:', error);
       
-      // Se o erro for de "nenhum advogado disponível", exibimos um alerta específico
-      if (!noLawyersAvailable) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível encontrar um advogado. Tente novamente.",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Erro",
+        description: "Houve um problema ao processar sua solicitação. Tente novamente.",
+        variant: "destructive"
+      });
       
       // Mesmo com erro, avançamos para a mensagem final
       setCurrentStep(steps.length);
@@ -410,10 +394,10 @@ Obrigado.`;
                   {isSubmitting ? (
                     <>
                       <Loader2 size={16} className="mr-2 animate-spin" />
-                      Buscando advogado...
+                      Processando solicitação...
                     </>
                   ) : (
-                    "Encontrar advogado"
+                    "Enviar solicitação"
                   )}
                 </Button>
               </form>
@@ -468,21 +452,11 @@ Obrigado.`;
             message={generateMessage()}
             areaExpert={getAreaName()}
             contactInfo={contactInfo}
-            isActive={!noLawyersAvailable}
+            isActive={true}
             onRestart={handleRestart}
             lawyerId={lawyerId}
+            noLawyersAvailable={noLawyersAvailable}
           />
-          
-          {noLawyersAvailable && (
-            <div className="mt-6">
-              <button
-                onClick={handleRestart}
-                className="w-full py-3 px-4 bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded-md transition-all"
-              >
-                Tentar novamente
-              </button>
-            </div>
-          )}
         </>
       )}
     </motion.div>

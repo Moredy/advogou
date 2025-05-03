@@ -21,7 +21,7 @@ const Index: React.FC = () => {
             Conectamos você ao advogado ideal
           </h1>
           <p className="text-lg md:text-xl max-w-3xl mx-auto text-juris-text text-opacity-90">
-            Você precisa de ajuda com uma questão jurídica? Responda algumas perguntas rápidas e vamos te conectar com um advogado especializado, com uma mensagem personalizada pronta para ser enviada.
+            Você precisa de ajuda com uma questão jurídica? Responda algumas perguntas rápidas e vamos registrar sua solicitação para um advogado especializado, com uma mensagem personalizada pronta para ser enviada.
           </p>
         </motion.div>
         
