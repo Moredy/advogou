@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -17,8 +18,6 @@ interface ContactInfo {
   phone: string;
 }
 
-// Lista de emails administrativos - para evitar que leads sejam direcionados a administradores
-const adminEmails = ['admin@jurisquick.com'];
 // ID de lead temporário para casos sem advogados disponíveis
 const ADMIN_FALLBACK_ID = '00000000-0000-0000-0000-000000000000';
 
@@ -143,36 +142,89 @@ const OnboardingForm: React.FC = () => {
     }
   };
 
-  const handleContactSubmit = async (data: ContactInfo) => {
-    setIsSubmitting(true);
-    setContactInfo(data);
-    setNoLawyersAvailable(false); // Reset no lawyers available state
-    
+  // Função refatorada para selecionar advogados mais adequados ao caso
+  const findMatchingLawyer = async (areaName: string, detalhes: string) => {
     try {
-      // Encontrar um advogado para o lead
-      const areaName = getAreaName();
-      
-      // Consulta melhorada para encontrar advogados
+      // Consulta para encontrar apenas advogados aprovados e com inscrição ativa
       const { data: lawyers, error: queryError } = await supabase
         .from('lawyers')
         .select('id, email, specialty')
-        .eq('status', 'approved')  // Somente advogados aprovados
+        .eq('status', 'approved')  // Somente advogados aprovados pelo admin
         .eq('subscription_active', true)  // Com assinatura ativa
-        .not('email', 'eq', 'admin@jurisquick.com');  // Excluir administradores
+        .order('created_at', { ascending: false });  // Priorizar os mais recentes
       
       if (queryError) {
         console.error('Erro ao consultar advogados:', queryError);
         throw queryError;
       }
       
-      console.log('Advogados encontrados:', lawyers);
+      console.log('Todos advogados aprovados:', lawyers);
       
-      // Verificar se temos advogados disponíveis
       if (!lawyers || lawyers.length === 0) {
-        console.log("Nenhum advogado aprovado encontrado no sistema, usando ID de fallback administrativo");
+        console.log("Nenhum advogado aprovado encontrado");
+        return null;
+      }
+
+      // Primeiro filtro: advogados com a especialidade exata
+      let exactMatches = lawyers.filter(lawyer => 
+        lawyer.specialty && lawyer.specialty.toLowerCase() === technicalArea.toLowerCase()
+      );
+      
+      console.log(`Advogados com especialidade exata "${technicalArea}":`, exactMatches);
+      
+      // Se encontrarmos correspondências exatas, usaremos esses advogados
+      if (exactMatches.length > 0) {
+        const selectedLawyer = exactMatches[Math.floor(Math.random() * exactMatches.length)];
+        console.log("Advogado selecionado com match exato:", selectedLawyer);
+        return selectedLawyer;
+      }
+      
+      // Segundo filtro: busca por palavras-chave na especialidade
+      const keywords = technicalArea.split(' ');
+      let partialMatches = lawyers.filter(lawyer => 
+        lawyer.specialty && keywords.some(keyword => 
+          lawyer.specialty.toLowerCase().includes(keyword.toLowerCase())
+        )
+      );
+      
+      console.log(`Advogados com match parcial para "${technicalArea}":`, partialMatches);
+      
+      // Se encontrarmos correspondências parciais, usaremos esses advogados
+      if (partialMatches.length > 0) {
+        const selectedLawyer = partialMatches[Math.floor(Math.random() * partialMatches.length)];
+        console.log("Advogado selecionado com match parcial:", selectedLawyer);
+        return selectedLawyer;
+      }
+      
+      // Se não houver correspondências, selecionamos um advogado aleatório dentre os aprovados
+      const selectedLawyer = lawyers[Math.floor(Math.random() * lawyers.length)];
+      console.log("Advogado selecionado aleatoriamente (sem match):", selectedLawyer);
+      return selectedLawyer;
+    } catch (error) {
+      console.error('Erro ao buscar advogados:', error);
+      return null;
+    }
+  };
+
+  const handleContactSubmit = async (data: ContactInfo) => {
+    setIsSubmitting(true);
+    setContactInfo(data);
+    setNoLawyersAvailable(false);
+    
+    try {
+      // Encontrar o melhor advogado para o lead
+      const areaName = getAreaName();
+      const detalhes = selections.detalhe || ''; 
+      
+      // Buscar um advogado que corresponda às necessidades do cliente
+      const matchingLawyer = await findMatchingLawyer(areaName, detalhes);
+      
+      // Verificar se encontramos um advogado adequado
+      if (!matchingLawyer) {
+        console.log("Nenhum advogado compatível encontrado, usando ID de fallback");
         setNoLawyersAvailable(true);
         
-        // Criar lead sem advogado específico (para administrador revisar depois)
+        // Criar lead para administração revisar posteriormente
         const message = generateMessage();
         await createLead({
           lawyer_id: ADMIN_FALLBACK_ID,
@@ -186,27 +238,10 @@ const OnboardingForm: React.FC = () => {
         
         setLawyerId(ADMIN_FALLBACK_ID);
       } else {
-        // Se tivermos advogados disponíveis, tentamos filtrá-los por especialidade
-        let matchingLawyers = lawyers;
-        
-        // Tentar pré-filtrar advogados com a mesma especialidade
-        const specialtyMatches = lawyers.filter(lawyer => 
-          lawyer.specialty && lawyer.specialty.toLowerCase() === technicalArea.toLowerCase()
-        );
-        
-        if (specialtyMatches.length > 0) {
-          matchingLawyers = specialtyMatches;
-          console.log(`Encontrados ${matchingLawyers.length} advogados com especialidade "${technicalArea}"`);
-        }
-        
-        // Selecionar um advogado aleatoriamente da lista filtrada
-        const selectedLawyer = matchingLawyers[Math.floor(Math.random() * matchingLawyers.length)];
-        console.log("Advogado selecionado:", selectedLawyer);
-        
         // Criar o lead com o advogado selecionado
         const message = generateMessage();
         await createLead({
-          lawyer_id: selectedLawyer.id,
+          lawyer_id: matchingLawyer.id,
           client_name: data.name,
           client_email: `cliente_${new Date().getTime()}@example.com`,
           client_phone: data.phone,
@@ -215,7 +250,7 @@ const OnboardingForm: React.FC = () => {
           status: 'pending'
         });
         
-        setLawyerId(selectedLawyer.id);
+        setLawyerId(matchingLawyer.id);
       }
       
       // Avançar para o último passo
@@ -225,7 +260,7 @@ const OnboardingForm: React.FC = () => {
         title: noLawyersAvailable ? "Solicitação registrada!" : "Advogado encontrado!",
         description: noLawyersAvailable 
           ? "Um administrador revisará sua solicitação em breve." 
-          : "Um profissional foi notificado sobre sua solicitação.",
+          : "Um profissional especializado foi notificado sobre sua solicitação.",
       });
     } catch (error) {
       console.error('Erro ao processar lead:', error);
@@ -236,7 +271,6 @@ const OnboardingForm: React.FC = () => {
         variant: "destructive"
       });
       
-      // Mesmo com erro, avançamos para a mensagem final
       setCurrentStep(steps.length);
     } finally {
       setIsSubmitting(false);
