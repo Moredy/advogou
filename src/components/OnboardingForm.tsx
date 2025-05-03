@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -150,14 +149,12 @@ const OnboardingForm: React.FC = () => {
       // Encontrar um advogado para o lead
       const areaName = getAreaName();
       
-      console.log("Buscando advogados para a área:", areaName.toLowerCase());
-      console.log("Removendo filtro de status para depuração");
+      console.log("DEBUG - Buscando qualquer advogado disponível sem filtros");
       
-      // ALTERAÇÃO: Removendo o filtro de status para verificar quantos advogados existem na área
-      const { data: lawyers, error: lawyersError } = await supabase
+      // ALTERAÇÃO: Removendo TODOS os filtros, incluindo specialty e status
+      const { data: allLawyers, error: lawyersError } = await supabase
         .from('lawyers')
         .select('id, email, specialty, subscription_active, status')
-        .eq('specialty', areaName.toLowerCase())
         .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
         .order('created_at', { ascending: true });
 
@@ -166,53 +163,28 @@ const OnboardingForm: React.FC = () => {
         throw lawyersError;
       }
 
-      console.log("Advogados especializados encontrados (qualquer status):", lawyers?.length || 0);
-      if (lawyers) {
-        console.log("Status dos advogados especializados:", lawyers.map(l => ({ email: l.email, status: l.status, specialty: l.specialty })));
+      console.log("Total de advogados encontrados (sem filtros):", allLawyers?.length || 0);
+      if (allLawyers) {
+        console.log("Lista completa de advogados:", allLawyers.map(l => ({ 
+          id: l.id,
+          email: l.email, 
+          status: l.status, 
+          specialty: l.specialty,
+          subscription_active: l.subscription_active
+        })));
       }
 
       let selectedLawyerId: string;
       
-      // ALTERAÇÃO: Filtrando os advogados aprovados após a consulta
-      const approvedLawyers = lawyers?.filter(lawyer => lawyer.status === 'approved') || [];
-      console.log("Advogados aprovados na área:", approvedLawyers.length);
-
-      if (!approvedLawyers || approvedLawyers.length === 0) {
-        console.log("Nenhum advogado especializado aprovado encontrado, buscando qualquer advogado");
-        
-        // ALTERAÇÃO: Removendo o filtro de status também na segunda consulta
-        const { data: anyLawyers, error: anyLawyersError } = await supabase
-          .from('lawyers')
-          .select('id, email, specialty, subscription_active, status')
-          .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
-          .order('created_at', { ascending: true });
-          
-        if (anyLawyersError) {
-          console.error('Erro ao buscar qualquer advogado:', anyLawyersError);
-          throw anyLawyersError;
-        }
-        
-        console.log("Total de advogados encontrados (qualquer status):", anyLawyers?.length || 0);
-        if (anyLawyers) {
-          console.log("Status de todos os advogados:", anyLawyers.map(l => ({ email: l.email, status: l.status, specialty: l.specialty })));
-        }
-        
-        // ALTERAÇÃO: Filtrando os advogados aprovados após a consulta
-        const anyApprovedLawyers = anyLawyers?.filter(lawyer => lawyer.status === 'approved') || [];
-        console.log("Total de advogados aprovados:", anyApprovedLawyers.length);
-        
-        if (!anyApprovedLawyers || anyApprovedLawyers.length === 0) {
-          // Nova lógica: mostrar mensagem que não há advogados disponíveis
-          console.log("Não há advogados aprovados no sistema");
-          setNoLawyersAvailable(true);
-          throw new Error('Nenhum advogado disponível no sistema');
-        }
-        
-        selectedLawyerId = anyApprovedLawyers[0].id;
-      } else {
-        selectedLawyerId = approvedLawyers[0].id;
+      if (!allLawyers || allLawyers.length === 0) {
+        // Se mesmo sem filtros não for encontrado nenhum advogado
+        console.log("Não há advogados cadastrados no sistema");
+        setNoLawyersAvailable(true);
+        throw new Error('Nenhum advogado disponível no sistema');
       }
-
+      
+      // Vamos selecionar o primeiro advogado disponível, independente de status ou especialidade
+      selectedLawyerId = allLawyers[0].id;
       console.log("Advogado selecionado:", selectedLawyerId);
 
       // Criar o lead
