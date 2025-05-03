@@ -35,7 +35,7 @@ export const LawyersList: React.FC<LawyersListProps> = ({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="w-full overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -50,9 +50,9 @@ export const LawyersList: React.FC<LawyersListProps> = ({
         <TableBody>
           {filteredLawyers.map((lawyer) => (
             <TableRow key={lawyer.id}>
-              <TableCell>{lawyer.name}</TableCell>
+              <TableCell className="max-w-[150px] truncate">{lawyer.name}</TableCell>
               <TableCell>{lawyer.oab_number}</TableCell>
-              <TableCell>{lawyer.specialty}</TableCell>
+              <TableCell className="max-w-[150px] truncate">{lawyer.specialty}</TableCell>
               <TableCell>{formatDate(lawyer.created_at)}</TableCell>
               <TableCell>{getStatusBadge(lawyer.status)}</TableCell>
               <TableCell>

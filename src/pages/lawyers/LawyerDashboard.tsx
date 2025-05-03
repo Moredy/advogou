@@ -357,26 +357,26 @@ const LawyerDashboard: React.FC = () => {
               : "Você não pode receber leads até que sua conta seja aprovada por um administrador."}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 sm:px-6">
           {isApproved ? (
             recentLeads.length > 0 ? (
-              <div className="rounded-md border">
+              <div className="w-full overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="py-3 px-4 text-left font-medium">Cliente</th>
-                      <th className="py-3 px-4 text-left font-medium">Área</th>
-                      <th className="py-3 px-4 text-left font-medium">Data</th>
-                      <th className="py-3 px-4 text-left font-medium">Status</th>
+                      <th className="py-3 px-3 text-left font-medium">Cliente</th>
+                      <th className="py-3 px-3 text-left font-medium">Área</th>
+                      <th className="py-3 px-3 text-left font-medium">Data</th>
+                      <th className="py-3 px-3 text-left font-medium">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentLeads.map((lead) => (
                       <tr key={lead.id} className="border-b">
-                        <td className="py-3 px-4">{lead.client_name}</td>
-                        <td className="py-3 px-4">{lead.case_area}</td>
-                        <td className="py-3 px-4">{formatDate(lead.created_at)}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3 max-w-[150px] truncate">{lead.client_name}</td>
+                        <td className="py-3 px-3 max-w-[150px] truncate">{lead.case_area}</td>
+                        <td className="py-3 px-3 whitespace-nowrap">{formatDate(lead.created_at)}</td>
+                        <td className="py-3 px-3 whitespace-nowrap">
                           {getStatusBadge(lead.status)}
                         </td>
                       </tr>
