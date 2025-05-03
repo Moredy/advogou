@@ -22,7 +22,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ closeSidebar }) => {
     { name: "Dashboard", path: "/admin/dashboard", icon: <Home size={20} /> },
     { name: "Validar Advogados", path: "/admin/aprovacoes", icon: <Shield size={20} /> },
   ];
-  
+
   const handleNavigation = () => {
     if (closeSidebar) {
       closeSidebar();
@@ -35,13 +35,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ closeSidebar }) => {
     }
     logout();
   };
-  
+
   return (
     <div className="w-64 h-full bg-juris-dark text-white">
       <div className="p-4">
         <Link to="/" className="flex items-center mb-6" onClick={handleNavigation}>
           <span className="font-poppins font-bold text-xl tracking-tight">
-            Juris<span className="text-juris-accent">Quick</span>
+            <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
           </span>
         </Link>
 

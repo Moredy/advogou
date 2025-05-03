@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -66,13 +66,13 @@ const AdminLogin: React.FC = () => {
 
   // Lista de especialidades disponíveis
   const specialties = [
-    "Direito Civil", 
-    "Direito Penal", 
-    "Direito Tributário", 
+    "Direito Civil",
+    "Direito Penal",
+    "Direito Tributário",
     "Direito do Consumidor",
-    "Direito Trabalhista", 
-    "Direito Empresarial", 
-    "Direito Imobiliário", 
+    "Direito Trabalhista",
+    "Direito Empresarial",
+    "Direito Imobiliário",
     "Direito Digital",
     "Direito de Família"
   ];
@@ -98,17 +98,17 @@ const AdminLogin: React.FC = () => {
 
     if (hashParams.error) {
       let errorMessage = "Ocorreu um erro durante a autenticação.";
-      
+
       if (hashParams.error_code === "otp_expired" || hashParams.error_description?.includes("Email link is invalid or has expired")) {
         errorMessage = "O link de confirmação expirou ou é inválido. Por favor, solicite um novo.";
       }
-      
+
       toast({
         title: "Erro de autenticação",
         description: errorMessage,
         variant: "destructive"
       });
-      
+
       // Limpar os parâmetros de erro da URL
       window.history.replaceState(null, '', window.location.pathname);
     }
@@ -149,12 +149,12 @@ const AdminLogin: React.FC = () => {
         },
         values.password
       );
-      
+
       toast({
         title: "Cadastro realizado com sucesso",
         description: "Por favor, verifique seu e-mail para confirmar seu cadastro.",
       });
-      
+
     } catch (error) {
       toast({
         title: "Erro ao realizar cadastro",
@@ -200,7 +200,7 @@ const AdminLogin: React.FC = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-white mb-2">
-              Juris<span className="text-juris-accent">Quick</span>
+              <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
             </h1>
             <p className="text-gray-400">Recuperação de Senha</p>
           </div>
@@ -249,9 +249,9 @@ const AdminLogin: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-juris-dark to-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Juris<span className="text-juris-accent">Quick</span>
-          </h1>
+          <Link to="/" className="flex items-center mb-6">
+            <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
+          </Link>
           <p className="text-gray-400">Painel de Advogados</p>
         </div>
 
@@ -391,8 +391,8 @@ const AdminLogin: React.FC = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Gênero</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
+                            <Select
+                              onValueChange={field.onChange}
                               defaultValue={field.value}
                               disabled={isSubmitting}
                             >
@@ -419,8 +419,8 @@ const AdminLogin: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Especialidade</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
+                          <Select
+                            onValueChange={field.onChange}
                             defaultValue={field.value}
                             disabled={isSubmitting}
                           >

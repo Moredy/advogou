@@ -16,7 +16,7 @@ const LawyerSidebar: React.FC<LawyerSidebarProps> = ({ closeSidebar }) => {
   const isActive = (path: string) => {
     return location.pathname === path;
   };
-  
+
   // Menu items for regular lawyers (dashboard, plans, profile, leads)
   const lawyerMenuItems = [
     { name: "Dashboard", path: "/advogado/dashboard", icon: <Home size={20} /> },
@@ -42,9 +42,9 @@ const LawyerSidebar: React.FC<LawyerSidebarProps> = ({ closeSidebar }) => {
     <div className="w-64 h-full bg-juris-dark text-white">
       <div className="p-4">
         <Link to="/" className="flex items-center mb-6" onClick={handleNavigation}>
-          <span className="font-poppins font-bold text-xl tracking-tight">
-            Juris<span className="text-juris-accent">Quick</span>
-          </span>
+
+            <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
+
         </Link>
 
         <nav className="space-y-1">

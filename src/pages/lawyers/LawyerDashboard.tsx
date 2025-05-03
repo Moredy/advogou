@@ -216,57 +216,18 @@ const LawyerDashboard: React.FC = () => {
         </div>
       </div>
 
-      {!isAdmin && isPending && (
-        <Alert>
-          <AlertTitle>Aguardando aprovação</AlertTitle>
-          <AlertDescription>
-            Sua conta está em análise e será avaliada por um especialista em até 24 horas. 
-            Para aumentar suas chances de aprovação, mantenha seu perfil o mais completo possível,
-            incluindo especialidades, biografia profissional e informações de contato.
-          </AlertDescription>
-        </Alert>
-      )}
 
-      {!isAdmin && isRejected && (
-        <Alert variant="destructive">
-          <AlertTitle>Cadastro rejeitado</AlertTitle>
-          <AlertDescription className="space-y-4">
-            <p>
-              Seu cadastro foi analisado e não foi aprovado. Isto pode ocorrer por diversos motivos, 
-              como informações incompletas ou inconsistentes. Sugerimos revisar seus dados e certificar-se 
-              de que todas as informações estejam corretas e completas.
-            </p>
-            <Button 
-              onClick={requestReevaluation} 
-              variant="outline" 
-              className="mt-2 bg-white"
-              disabled={requestingReeval}
-            >
-              {requestingReeval ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                  Processando...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" /> 
-                  Solicitar nova avaliação
-                </>
-              )}
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
+
 
       {!isAdmin && !isApproved && (
         <Alert variant="warning">
           <AlertTitle>Conta não aprovada</AlertTitle>
-          <AlertDescription>
+          <AlertDescription className="mt-2">
             Sua conta precisa ser aprovada por um administrador antes que você possa receber leads.
             {isPending ? (
-              <p className="mt-2">Seu cadastro está em análise. Por favor, aguarde a aprovação.</p>
+              <p className="mt-2">Seu cadastro está em análise. Complete as informações no seu perfil para aumentar suas chances de aprovação.</p>
             ) : (
-              <p className="mt-2">Seu cadastro foi rejeitado. Por favor, solicite uma reavaliação.</p>
+              <p className="mt-2">Seu cadastro foi rejeitado. Por favor, atualize seus dados no perfil pois um novo profissional irá verifica-lo até 48 horas.</p>
             )}
           </AlertDescription>
         </Alert>
