@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -152,13 +151,12 @@ const OnboardingForm: React.FC = () => {
       
       console.log("Buscando advogados para a área:", areaName.toLowerCase());
       
-      // CORREÇÃO: Modificando a consulta para buscar advogados corretamente
+      // CORREÇÃO: Removendo o filtro subscription_active para incluir advogados com plano gratuito
       const { data: lawyers, error: lawyersError } = await supabase
         .from('lawyers')
         .select('id, email, specialty, subscription_active, status')
         .eq('specialty', areaName.toLowerCase())
         .eq('status', 'approved')
-        .eq('subscription_active', true)
         .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
         .order('created_at', { ascending: true })
         .limit(10);
@@ -175,13 +173,11 @@ const OnboardingForm: React.FC = () => {
       if (!lawyers || lawyers.length === 0) {
         console.log("Nenhum advogado especializado encontrado, buscando qualquer advogado aprovado");
         
-        // CORREÇÃO: Se não encontrou advogado especialista aprovado,
-        // tenta encontrar qualquer advogado ativo E aprovado, excluindo admin
+        // CORREÇÃO: Também removendo o filtro subscription_active aqui
         const { data: anyLawyers, error: anyLawyersError } = await supabase
           .from('lawyers')
           .select('id, email, specialty, subscription_active, status')
           .eq('status', 'approved')
-          .eq('subscription_active', true)
           .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
           .order('created_at', { ascending: true })
           .limit(10);
