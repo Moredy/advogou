@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, Shield, LogOut } from "lucide-react";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { cn } from "@/lib/utils";
-
+import logo from '@/assets/logo-transparent-svg.svg';
 interface AdminSidebarProps {
   closeSidebar?: () => void;
 }
@@ -41,7 +41,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ closeSidebar }) => {
       <div className="p-4">
         <Link to="/" className="flex items-center mb-6" onClick={handleNavigation}>
           <span className="font-poppins font-bold text-xl tracking-tight">
-            <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
+            <img src={logo} alt="Advogou Logo" className="h-[70px]" />
           </span>
         </Link>
 

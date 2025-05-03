@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import logo from '@/assets/logo-transparent-svg.svg';
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -200,7 +201,7 @@ const AdminLogin: React.FC = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-white mb-2">
-              <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
+              <img src={logo} alt="Advogou Logo" className="h-[70px]" />
             </h1>
             <p className="text-gray-400">Recuperação de Senha</p>
           </div>
@@ -250,7 +251,7 @@ const AdminLogin: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <Link to="/" className="flex items-center mb-6">
-            <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
+            <img src={logo} alt="Advogou Logo" className="h-[70px]" />
           </Link>
           <p className="text-gray-400">Painel de Advogados</p>
         </div>
