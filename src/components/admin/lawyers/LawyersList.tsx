@@ -40,9 +40,10 @@ export const LawyersList: React.FC<LawyersListProps> = ({
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
-            <TableHead>OAB</TableHead>
-            <TableHead>Especialidade</TableHead>
-            <TableHead>Data de Cadastro</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead className="hidden md:table-cell">OAB</TableHead>
+            <TableHead className="hidden md:table-cell">Especialidade</TableHead>
+            <TableHead className="hidden md:table-cell">Data de Cadastro</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Ação</TableHead>
           </TableRow>
@@ -50,10 +51,11 @@ export const LawyersList: React.FC<LawyersListProps> = ({
         <TableBody>
           {filteredLawyers.map((lawyer) => (
             <TableRow key={lawyer.id}>
-              <TableCell className="max-w-[150px] truncate">{lawyer.name}</TableCell>
-              <TableCell>{lawyer.oab_number}</TableCell>
-              <TableCell className="max-w-[150px] truncate">{lawyer.specialty}</TableCell>
-              <TableCell>{formatDate(lawyer.created_at)}</TableCell>
+              <TableCell className="font-medium">{lawyer.name}</TableCell>
+              <TableCell className="max-w-[200px] truncate">{lawyer.email}</TableCell>
+              <TableCell className="hidden md:table-cell">{lawyer.oab_number}</TableCell>
+              <TableCell className="hidden md:table-cell max-w-[150px] truncate">{lawyer.specialty}</TableCell>
+              <TableCell className="hidden md:table-cell">{formatDate(lawyer.created_at)}</TableCell>
               <TableCell>{getStatusBadge(lawyer.status)}</TableCell>
               <TableCell>
                 <Button 
