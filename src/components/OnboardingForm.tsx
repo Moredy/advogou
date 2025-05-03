@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -149,39 +150,48 @@ const OnboardingForm: React.FC = () => {
       // Encontrar um advogado para o lead
       const areaName = getAreaName();
       
-      // MODIFICAÇÃO: Obter um advogado da área especializada, 
-      // excluindo contas admin e garantindo que apenas advogados aprovados sejam considerados
+      console.log("Buscando advogados para a área:", areaName.toLowerCase());
+      
+      // CORREÇÃO: Modificando a consulta para buscar advogados corretamente
       const { data: lawyers, error: lawyersError } = await supabase
         .from('lawyers')
-        .select('id, email')
+        .select('id, email, specialty, subscription_active, status')
         .eq('specialty', areaName.toLowerCase())
+        .eq('status', 'approved')
         .eq('subscription_active', true)
-        .eq('status', 'approved') // Garantir que apenas advogados aprovados recebam leads
         .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
-        .limit(1);
+        .order('created_at', { ascending: true })
+        .limit(10);
 
       if (lawyersError) {
         console.error('Erro ao buscar advogados:', lawyersError);
         throw lawyersError;
       }
 
+      console.log("Advogados encontrados:", lawyers?.length || 0, lawyers);
+
       let selectedLawyerId: string;
 
       if (!lawyers || lawyers.length === 0) {
-        // MODIFICAÇÃO: Se não encontrou advogado especialista aprovado,
+        console.log("Nenhum advogado especializado encontrado, buscando qualquer advogado aprovado");
+        
+        // CORREÇÃO: Se não encontrou advogado especialista aprovado,
         // tenta encontrar qualquer advogado ativo E aprovado, excluindo admin
         const { data: anyLawyers, error: anyLawyersError } = await supabase
           .from('lawyers')
-          .select('id, email')
+          .select('id, email, specialty, subscription_active, status')
+          .eq('status', 'approved')
           .eq('subscription_active', true)
-          .eq('status', 'approved') // Garantir que apenas advogados aprovados recebam leads
           .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
-          .limit(1);
+          .order('created_at', { ascending: true })
+          .limit(10);
           
         if (anyLawyersError) {
           console.error('Erro ao buscar qualquer advogado:', anyLawyersError);
           throw anyLawyersError;
         }
+        
+        console.log("Advogados gerais encontrados:", anyLawyers?.length || 0, anyLawyers);
         
         if (!anyLawyers || anyLawyers.length === 0) {
           // Nova lógica: mostrar mensagem que não há advogados disponíveis
