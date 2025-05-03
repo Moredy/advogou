@@ -357,7 +357,7 @@ const OnboardingForm: React.FC = () => {
 
     const name = contactInfo?.name || '';
 
-    return `Olá, me chamo ${name} e encontrei seu contato pelo JurisQuick.
+    return `Olá, me chamo ${name} e encontrei seu contato pelo Advogou.com.
 
 ${problemDesc.charAt(0).toUpperCase() + problemDesc.slice(1)}.
 A situação é ${urgencia} para mim.

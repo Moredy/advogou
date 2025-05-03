@@ -22,7 +22,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
             <span className="font-poppins font-bold text-2xl text-white tracking-tight">
-              Juris<span className="text-juris-accent">Quick</span>
+              <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
             </span>
           </Link>
           

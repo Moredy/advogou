@@ -21,7 +21,7 @@ const HowItWorks: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <h1 className="text-3xl md:text-5xl font-semibold mb-4 text-white">
-            Como funciona o JurisQuick
+            Como funciona o Advogou
           </h1>
           <p className="text-lg md:text-xl max-w-3xl mx-auto text-juris-text text-opacity-90">
             Conectamos pessoas com necessidades jurídicas a advogados especializados de forma rápida, eficiente e sem burocracia.
@@ -198,10 +198,10 @@ const HowItWorks: React.FC = () => {
           <Accordion type="single" collapsible className="card-custom">
             <AccordionItem value="item-1" className="border-white/10">
               <AccordionTrigger className="text-white hover:no-underline">
-                Quanto custa utilizar o JurisQuick?
+                Quanto custa utilizar o Advogou?
               </AccordionTrigger>
               <AccordionContent className="text-juris-text">
-                O JurisQuick é gratuito para quem busca um advogado. Os honorários advocatícios são definidos diretamente pelos profissionais em suas propostas, com total transparência.
+                O Advogou é gratuito para quem busca um advogado. Os honorários advocatícios são definidos diretamente pelos profissionais em suas propostas, com total transparência.
               </AccordionContent>
             </AccordionItem>
             

@@ -455,9 +455,7 @@ const LawyerLeads: React.FC = () => {
                   {getStatusLabel(leads.find(l => l.id === openLeadId)?.status || "").text}
                 </Badge>
                 
-                <div className="bg-gray-50 p-4 rounded border">
-                  <p className="text-sm">{leads.find(l => l.id === openLeadId)?.description}</p>
-                </div>
+       
               </div>
               
               {/* Feedback form */}

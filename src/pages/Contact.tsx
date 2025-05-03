@@ -108,7 +108,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-white font-medium">Email</p>
-                    <p className="text-juris-text text-opacity-80">contato@jurisquick.com.br</p>
+                    <p className="text-juris-text text-opacity-80">contato@advogou.com</p>
                   </div>
                 </div>
                 
