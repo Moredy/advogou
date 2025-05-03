@@ -17,37 +17,38 @@ interface ContactInfo {
   phone: string;
 }
 
+interface LawyerInfo {
+  id: string;
+  email: string;
+  specialty: string;
+  gender: string;
+  phone: string;
+}
+
 // ID de lead temporário para casos sem advogados disponíveis
 const ADMIN_FALLBACK_ID = '00000000-0000-0000-0000-000000000000';
 
 const OnboardingForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState<Record<string, string>>({});
-  const [technicalArea, setTechnicalArea] = useState(''); 
+  const [technicalArea, setTechnicalArea] = useState('');
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lawyerId, setLawyerId] = useState<string | null>(null);
+  const [lawyerContactInfo, setLawyerContactInfo] = useState<LawyerInfo | null>(null)
   const [noLawyersAvailable, setNoLawyersAvailable] = useState(false);
   const { toast } = useToast();
-  
+
   const contactForm = useForm<ContactInfo>({
     defaultValues: {
       name: '',
       phone: ''
     }
   });
-  
+
   // Definição dos passos com perguntas mais acessíveis
   const steps = [
-    {
-      id: 'situacao',
-      question: 'Qual é a sua situação atual?',
-      options: [
-        { id: 'orientacao', label: 'Preciso apenas de orientação jurídica', value: 'orientacao' },
-        { id: 'processo', label: 'Quero entrar com um processo', value: 'processo' },
-        { id: 'citado', label: 'Fui citado em um processo', value: 'citado' }
-      ]
-    },
+
     {
       id: 'problema',
       question: 'Qual problema você está enfrentando?',
@@ -63,7 +64,7 @@ const OnboardingForm: React.FC = () => {
       id: 'detalhe',
       question: 'Pode nos dar mais detalhes?',
       getDynamicOptions: (selections: Record<string, string>) => {
-        switch(selections.problema) {
+        switch (selections.problema) {
           case 'trabalho':
             return [
               { id: 'demissao', label: 'Fui demitido injustamente', value: 'demissao' },
@@ -105,6 +106,15 @@ const OnboardingForm: React.FC = () => {
       }
     },
     {
+      id: 'situacao',
+      question: 'Qual é a sua situação atual?',
+      options: [
+        { id: 'orientacao', label: 'Preciso apenas de orientação jurídica', value: 'orientacao' },
+        { id: 'processo', label: 'Quero entrar com um processo', value: 'processo' },
+        { id: 'citado', label: 'Fui citado em um processo', value: 'citado' }
+      ]
+    },
+    {
       id: 'urgencia',
       question: 'Qual a urgência do seu caso?',
       options: [
@@ -131,18 +141,18 @@ const OnboardingForm: React.FC = () => {
 
   const handleSelectOption = (option: Option) => {
     const step = steps[currentStep];
-    
+
     // Armazenar seleção do usuário
     setSelections(prev => ({
       ...prev,
       [step.id]: option.value
     }));
-    
+
     // Se for o segundo passo (problema), armazenar a área técnica correspondente
     if (step.id === 'problema' && 'technicalArea' in option) {
       setTechnicalArea(option.technicalArea as string);
     }
-    
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
@@ -155,66 +165,67 @@ const OnboardingForm: React.FC = () => {
     try {
       // Verificamos se o cliente prefere atendimento feminino
       const prefereAdvogada = selections.prefFeminina === 'sim';
-      
+
       // Base da consulta
       let query = supabase
         .from('lawyers')
-        .select('id, email, specialty, gender')
+        .select('id, email, specialty, gender, phone',)
         .eq('status', 'approved')  // Somente advogados aprovados pelo admin
         .eq('subscription_active', true)  // Com assinatura ativa
-        .neq('email', 'admin@jurisquick.com');  // Excluir o email do administrador
-      
+        .neq('email', 'admin@jurisquick.com')  // Excluir o email do administrador
+        .not('phone', 'is', null); // Excluir advogados sem número de telefone
+
       // Agora podemos usar o filtro de gênero pois a coluna existe no banco
       if (prefereAdvogada) {
         query = query.eq('gender', 'feminino');
       }
-      
+
       // Finalizar a consulta ordenando por data de criação
       const { data: lawyers, error: queryError } = await query.order('created_at', { ascending: false });
-      
+
       if (queryError) {
         console.error('Erro ao consultar advogados:', queryError);
         throw queryError;
       }
-      
+
       console.log('Todos advogados aprovados:', lawyers);
-      
+
       if (!lawyers || lawyers.length === 0) {
         console.log("Nenhum advogado aprovado encontrado");
         return null;
       }
 
       // Primeiro filtro: advogados com a especialidade exata
-      let exactMatches = lawyers.filter(lawyer => 
+      let exactMatches = lawyers.filter(lawyer =>
         lawyer.specialty && lawyer.specialty.toLowerCase() === technicalArea.toLowerCase()
       );
-      
+
       console.log(`Advogados com especialidade exata "${technicalArea}":`, exactMatches);
-      
+
       // Se encontrarmos correspondências exatas, usaremos esses advogados
       if (exactMatches.length > 0) {
         const selectedLawyer = exactMatches[Math.floor(Math.random() * exactMatches.length)];
         console.log("Advogado selecionado com match exato:", selectedLawyer);
         return selectedLawyer;
       }
-      
+
       // Segundo filtro: busca por palavras-chave na especialidade
       const keywords = technicalArea.split(' ');
-      let partialMatches = lawyers.filter(lawyer => 
-        lawyer.specialty && keywords.some(keyword => 
+      let partialMatches = lawyers.filter(lawyer =>
+        lawyer.specialty && keywords.some(keyword =>
           lawyer.specialty.toLowerCase().includes(keyword.toLowerCase())
         )
       );
-      
+
       console.log(`Advogados com match parcial para "${technicalArea}":`, partialMatches);
-      
+
       // Se encontrarmos correspondências parciais, usaremos esses advogados
       if (partialMatches.length > 0) {
         const selectedLawyer = partialMatches[Math.floor(Math.random() * partialMatches.length)];
         console.log("Advogado selecionado com match parcial:", selectedLawyer);
         return selectedLawyer;
       }
-      
+
       // Se não houver correspondências, selecionamos um advogado aleatório dentre os aprovados
       const selectedLawyer = lawyers[Math.floor(Math.random() * lawyers.length)];
       console.log("Advogado selecionado aleatoriamente (sem match):", selectedLawyer);
@@ -229,20 +240,20 @@ const OnboardingForm: React.FC = () => {
     setIsSubmitting(true);
     setContactInfo(data);
     setNoLawyersAvailable(false);
-    
+
     try {
       // Encontrar o melhor advogado para o lead
       const areaName = getAreaName();
-      const detalhes = selections.detalhe || ''; 
-      
+      const detalhes = selections.detalhe || '';
+
       // Buscar um advogado que corresponda às necessidades do cliente
       const matchingLawyer = await findMatchingLawyer(areaName, detalhes);
-      
+
       // Verificar se encontramos um advogado adequado
       if (!matchingLawyer) {
         console.log("Nenhum advogado compatível encontrado, usando ID de fallback");
         setNoLawyersAvailable(true);
-        
+
         // Criar lead para administração revisar posteriormente
         const message = generateMessage();
         await createLead({
@@ -254,7 +265,7 @@ const OnboardingForm: React.FC = () => {
           description: message,
           status: 'pending'
         });
-        
+
         setLawyerId(ADMIN_FALLBACK_ID);
       } else {
         // Criar o lead com o advogado selecionado
@@ -268,28 +279,22 @@ const OnboardingForm: React.FC = () => {
           description: message,
           status: 'pending'
         });
-        
+        setLawyerContactInfo(matchingLawyer)
         setLawyerId(matchingLawyer.id);
       }
-      
+
       // Avançar para o último passo
       setCurrentStep(steps.length);
-      
-      toast({
-        title: noLawyersAvailable ? "Solicitação registrada!" : "Advogado encontrado!",
-        description: noLawyersAvailable 
-          ? "Um administrador revisará sua solicitação em breve." 
-          : "Um profissional especializado foi notificado sobre sua solicitação.",
-      });
+
     } catch (error) {
       console.error('Erro ao processar lead:', error);
-      
+
       toast({
         title: "Erro",
         description: "Houve um problema ao processar sua solicitação. Tente novamente.",
         variant: "destructive"
       });
-      
+
       setCurrentStep(steps.length);
     } finally {
       setIsSubmitting(false);
@@ -305,7 +310,7 @@ const OnboardingForm: React.FC = () => {
       'imobiliario': 'Direito Imobiliário',
       'civil': 'Direito Civil'
     };
-    
+
     return areaNames[technicalArea] || 'Direito';
   };
 
@@ -314,18 +319,18 @@ const OnboardingForm: React.FC = () => {
     const situacao = selections.situacao;
     const problema = selections.problema;
     const detalhe = selections.detalhe;
-    
+
     let descricao = '';
-    
+
     // Descrição baseada na situação
     const situacaoDescricoes: Record<string, string> = {
       'orientacao': 'preciso apenas de orientação jurídica sobre',
       'processo': 'desejo entrar com um processo relacionado a',
       'citado': 'fui citado em um processo envolvendo'
     };
-    
+
     descricao = situacaoDescricoes[situacao] || '';
-    
+
     // Mapeamento de problemas para descrições mais detalhadas
     const problemaDescricoes: Record<string, string> = {
       'trabalho': 'um problema trabalhista',
@@ -334,26 +339,26 @@ const OnboardingForm: React.FC = () => {
       'imovel': 'um problema imobiliário',
       'acidente': 'um acidente ou dano sofrido'
     };
-    
+
     descricao += ' ' + (problemaDescricoes[problema] || 'uma questão jurídica');
-    
+
     // Adicionar detalhes específicos se disponíveis
     if (detalhe) {
       // Poderíamos adicionar mais detalhes específicos aqui se necessário
       descricao += ` (${detalhe})`;
     }
-    
+
     return descricao;
   };
 
   const generateMessage = (): string => {
     const area = getAreaName();
     const problemDesc = getProblemDescription();
-    const urgencia = selections.urgencia === 'alta' 
-      ? 'muito urgente' 
-      : selections.urgencia === 'media' 
-      ? 'urgente' 
-      : 'não urgente';
+    const urgencia = selections.urgencia === 'alta'
+      ? 'muito urgente'
+      : selections.urgencia === 'media'
+        ? 'urgente'
+        : 'não urgente';
 
     const name = contactInfo?.name || '';
 
@@ -376,9 +381,16 @@ Obrigado.`;
     setNoLawyersAvailable(false);
     contactForm.reset();
   };
+  const formatPhoneNumber = (value: string) => {
+    if (!value) return '';
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}${numbers.slice(7, 11)}`;
+  };
 
   return (
-    <motion.div 
+    <motion.div
       className="card-custom max-w-2xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -387,16 +399,15 @@ Obrigado.`;
       <div className="flex justify-between items-center mb-6">
         <div className="flex space-x-2">
           {steps.map((_, index) => (
-            <div 
+            <div
               key={index}
-              className={`h-2 w-10 rounded-full ${
-                index <= currentStep ? 'bg-juris-accent' : 'bg-white bg-opacity-20'
-              }`}
+              className={`h-2 w-10 rounded-full ${index <= currentStep ? 'bg-juris-accent' : 'bg-white bg-opacity-20'
+                }`}
             />
           ))}
         </div>
         {currentStep > 0 && currentStep < steps.length && (
-          <button 
+          <button
             onClick={() => setCurrentStep(prev => prev - 1)}
             className="text-sm text-juris-text text-opacity-70 hover:text-opacity-100"
           >
@@ -410,7 +421,7 @@ Obrigado.`;
           <h3 className="text-xl md:text-2xl font-medium mb-6 text-center">
             {steps[currentStep].question}
           </h3>
-          
+
           {(steps[currentStep] as any).type === 'form' ? (
             <Form {...contactForm}>
               <form onSubmit={contactForm.handleSubmit(handleContactSubmit)} className="space-y-6">
@@ -421,10 +432,10 @@ Obrigado.`;
                     <FormItem>
                       <FormLabel className="text-white">Nome completo</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Digite seu nome completo" 
-                          {...field} 
-                          className="bg-white bg-opacity-5 border-white border-opacity-20 text-white" 
+                        <Input
+                          placeholder="Digite seu nome completo"
+                          {...field}
+                          className="bg-white bg-opacity-5 border-white border-opacity-20 text-white"
                           required
                         />
                       </FormControl>
@@ -438,19 +449,27 @@ Obrigado.`;
                     <FormItem>
                       <FormLabel className="text-white">Telefone com WhatsApp</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="(00) 00000-0000" 
-                          {...field} 
-                          className="bg-white bg-opacity-5 border-white border-opacity-20 text-white" 
+                        <Input
+                          placeholder="(00) 00000-0000"
+                          className="bg-white bg-opacity-5 border-white border-opacity-20 text-white"
                           required
                           type="tel"
+                          value={formatPhoneNumber(field.value)}
+                          onChange={(e) => {
+                            // Remove caracteres não numéricos e limita a 11 dígitos
+                            const numbers = e.target.value.replace(/\D/g, '').slice(0, 11);
+                            
+                            // Salva apenas os números no control
+                            field.onChange(numbers);
+                          }}
+                          maxLength={15}
                         />
                       </FormControl>
                     </FormItem>
                   )}
                 />
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-juris-accent hover:bg-opacity-90 text-white"
                   disabled={isSubmitting}
                 >
@@ -490,7 +509,7 @@ Obrigado.`;
               ) : null}
             </div>
           )}
-          
+
           {technicalArea && currentStep > 0 && (
             <div className="mt-4 text-xs text-juris-text text-opacity-50">
               <span className="opacity-50">Área técnica identificada:</span> {getAreaName()}
@@ -506,20 +525,22 @@ Obrigado.`;
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Não há advogados disponíveis</AlertTitle>
               <AlertDescription>
-                Infelizmente não temos advogados aprovados disponíveis para a área de {getAreaName()} no momento. 
+                Infelizmente não temos advogados aprovados disponíveis para a área de {getAreaName()} no momento.
                 Um administrador foi notificado e entrará em contato em breve.
               </AlertDescription>
             </Alert>
           )}
+          {lawyerContactInfo && 
           <ResultMessage
             message={generateMessage()}
             areaExpert={getAreaName()}
             contactInfo={contactInfo}
+            matchingLawyer={lawyerContactInfo}
             isActive={true}
             onRestart={handleRestart}
             lawyerId={lawyerId}
             noLawyersAvailable={noLawyersAvailable}
-          />
+          />}
         </>
       )}
     </motion.div>

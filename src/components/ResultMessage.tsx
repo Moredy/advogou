@@ -10,11 +10,20 @@ interface ContactInfo {
   phone: string;
 }
 
+interface LawyerInfo {
+  id: string;
+  email: string;
+  specialty: string;
+  gender: string;
+  phone: string;
+}
+
 interface ResultMessageProps {
   message: string;
   areaExpert: string;
   contactInfo: ContactInfo;
   isActive: boolean;
+  matchingLawyer: LawyerInfo,
   onRestart: () => void;
   lawyerId: string | null;
   noLawyersAvailable: boolean;
@@ -25,6 +34,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
   areaExpert,
   contactInfo,
   isActive,
+  matchingLawyer,
   onRestart,
   lawyerId,
   noLawyersAvailable
@@ -34,7 +44,11 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
   if (!isActive) return null;
 
   // Usar o telefone fornecido pelo usuário ou um número padrão como fallback
-  const phoneNumber = contactInfo.phone.replace(/\D/g, '') || "5511999999999";
+  let phoneNumber = matchingLawyer.phone.replace(/\D/g, '') || "5511999999999";
+  // Adicionar prefixo 55 se não começar com 55
+  if (!phoneNumber.startsWith('55')) {
+    phoneNumber = `55${phoneNumber}`;
+  }
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
   
@@ -104,8 +118,8 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
               className="w-full flex items-center justify-center gap-2 btn-primary"
               onClick={handleWhatsAppClick}
             >
-              <Phone size={18} />
-              <span className="whitespace-nowrap">Entrar em contato via WhatsApp</span>
+             
+              <span className="whitespace-nowrap mt-5">Entrar em contato via WhatsApp <Phone size={18} className='mt-[-20px]' /></span> 
             </Button>
           </>
         )}
@@ -115,7 +129,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
           className="w-full border border-white border-opacity-10 hover:bg-white hover:bg-opacity-5"
           onClick={onRestart}
         >
-          Iniciar nova consulta
+          Buscar outro advogado
         </Button>
       </div>
     </div>
