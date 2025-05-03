@@ -20,6 +20,7 @@ export async function handler(req: any, res: any) {
     const leadData = req.body;
     
     // Inserir o lead no banco de dados usando o client administrativo
+    // que contorna as políticas RLS quando necessário
     const { data, error } = await supabaseAdmin
       .from('leads')
       .insert(leadData)
