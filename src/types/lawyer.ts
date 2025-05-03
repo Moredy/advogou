@@ -11,7 +11,7 @@ export type Lawyer = {
   status: LawyerStatus;
   bio: string | null;
   phone?: string | null;
-  plan_type?: string | null;
+  plan_type?: "free" | "basic" | "premium" | "enterprise" | null;
   subscription_active?: boolean;
   gender?: string | null;
 };

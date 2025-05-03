@@ -56,6 +56,8 @@ export function useAdminAuthOperations(refreshLawyerProfile: () => Promise<void>
             name: lawyerData.name,
             oabNumber: lawyerData.oab_number,
             specialty: lawyerData.specialty,
+            gender: lawyerData.gender,
+            plan_type: "free", // Set default plan_type to "free"
           },
         },
       });
