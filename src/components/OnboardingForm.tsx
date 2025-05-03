@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
@@ -149,41 +150,43 @@ const OnboardingForm: React.FC = () => {
       // Encontrar um advogado para o lead
       const areaName = getAreaName();
       
-      console.log("DEBUG - Buscando qualquer advogado disponível sem filtros");
+      console.log("DEBUG - Verificando a estrutura exata da query e as colunas");
       
-      // ALTERAÇÃO: Removendo TODOS os filtros, incluindo specialty e status
+      // Query sem filtro nenhum e com select básico para garantir compatibilidade
+      console.log("Tentando consulta básica sem filtros e colunas mínimas");
+      const { data: basicLawyers, error: basicError } = await supabase
+        .from('lawyers')
+        .select('id');
+      
+      console.log("Resultado da consulta básica:", basicLawyers?.length || 0);
+      if (basicError) {
+        console.error("Erro na consulta básica:", basicError);
+      }
+      
+      // ALTERAÇÃO: Consulta simplificada verificando coluna a coluna
       const { data: allLawyers, error: lawyersError } = await supabase
         .from('lawyers')
-        .select('id, email, specialty, subscription_active, status')
-        .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
-        .order('created_at', { ascending: true });
+        .select('id, email');
 
       if (lawyersError) {
-        console.error('Erro ao buscar advogados:', lawyersError);
+        console.error('Erro ao buscar advogados (consulta simplificada):', lawyersError);
         throw lawyersError;
       }
 
-      console.log("Total de advogados encontrados (sem filtros):", allLawyers?.length || 0);
+      console.log("Total de advogados encontrados (consulta simplificada):", allLawyers?.length || 0);
       if (allLawyers) {
-        console.log("Lista completa de advogados:", allLawyers.map(l => ({ 
-          id: l.id,
-          email: l.email, 
-          status: l.status, 
-          specialty: l.specialty,
-          subscription_active: l.subscription_active
-        })));
+        console.log("Lista simplificada de advogados:", allLawyers);
       }
 
       let selectedLawyerId: string;
       
       if (!allLawyers || allLawyers.length === 0) {
-        // Se mesmo sem filtros não for encontrado nenhum advogado
         console.log("Não há advogados cadastrados no sistema");
         setNoLawyersAvailable(true);
         throw new Error('Nenhum advogado disponível no sistema');
       }
       
-      // Vamos selecionar o primeiro advogado disponível, independente de status ou especialidade
+      // Selecionamos o primeiro advogado disponível
       selectedLawyerId = allLawyers[0].id;
       console.log("Advogado selecionado:", selectedLawyerId);
 
