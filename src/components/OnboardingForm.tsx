@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { createLead } from '@/api/createLeadFunction';
 
 interface ContactInfo {
   name: string;
@@ -151,33 +152,71 @@ const OnboardingForm: React.FC = () => {
       // Encontrar um advogado para o lead
       const areaName = getAreaName();
       
-      // Consulta básica para verificar se existem advogados no sistema
+      // Consulta melhorada para encontrar advogados
       const { data: lawyers, error: queryError } = await supabase
         .from('lawyers')
-        .select('id')
-        .limit(1);
+        .select('id, email, specialty')
+        .eq('status', 'approved')  // Somente advogados aprovados
+        .eq('subscription_active', true)  // Com assinatura ativa
+        .not('email', 'eq', 'admin@jurisquick.com');  // Excluir administradores
       
       if (queryError) {
         console.error('Erro ao consultar advogados:', queryError);
         throw queryError;
       }
-
-      let selectedLawyerId: string;
       
-      // Se não houver advogados, usamos um ID administrativo temporário
+      console.log('Advogados encontrados:', lawyers);
+      
+      // Verificar se temos advogados disponíveis
       if (!lawyers || lawyers.length === 0) {
-        console.log("Nenhum advogado encontrado no sistema, usando ID de fallback administrativo");
+        console.log("Nenhum advogado aprovado encontrado no sistema, usando ID de fallback administrativo");
         setNoLawyersAvailable(true);
-        selectedLawyerId = ADMIN_FALLBACK_ID;
+        
+        // Criar lead sem advogado específico (para administrador revisar depois)
+        const message = generateMessage();
+        await createLead({
+          lawyer_id: ADMIN_FALLBACK_ID,
+          client_name: data.name,
+          client_email: `cliente_${new Date().getTime()}@example.com`,
+          client_phone: data.phone,
+          case_area: areaName.toLowerCase(),
+          description: message,
+          status: 'pending'
+        });
+        
+        setLawyerId(ADMIN_FALLBACK_ID);
       } else {
-        // Se houver advogados, usamos o primeiro da lista
-        selectedLawyerId = lawyers[0].id;
-        console.log("Advogado selecionado:", selectedLawyerId);
+        // Se tivermos advogados disponíveis, tentamos filtrá-los por especialidade
+        let matchingLawyers = lawyers;
+        
+        // Tentar pré-filtrar advogados com a mesma especialidade
+        const specialtyMatches = lawyers.filter(lawyer => 
+          lawyer.specialty && lawyer.specialty.toLowerCase() === technicalArea.toLowerCase()
+        );
+        
+        if (specialtyMatches.length > 0) {
+          matchingLawyers = specialtyMatches;
+          console.log(`Encontrados ${matchingLawyers.length} advogados com especialidade "${technicalArea}"`);
+        }
+        
+        // Selecionar um advogado aleatoriamente da lista filtrada
+        const selectedLawyer = matchingLawyers[Math.floor(Math.random() * matchingLawyers.length)];
+        console.log("Advogado selecionado:", selectedLawyer);
+        
+        // Criar o lead com o advogado selecionado
+        const message = generateMessage();
+        await createLead({
+          lawyer_id: selectedLawyer.id,
+          client_name: data.name,
+          client_email: `cliente_${new Date().getTime()}@example.com`,
+          client_phone: data.phone,
+          case_area: areaName.toLowerCase(),
+          description: message,
+          status: 'pending'
+        });
+        
+        setLawyerId(selectedLawyer.id);
       }
-
-      // Criar o lead mesmo sem advogado disponível
-      await createLead(selectedLawyerId, data, areaName);
-      setLawyerId(selectedLawyerId);
       
       // Avançar para o último passo
       setCurrentStep(steps.length);
@@ -201,35 +240,6 @@ const OnboardingForm: React.FC = () => {
       setCurrentStep(steps.length);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const createLead = async (lawyerId: string, data: ContactInfo, areaName: string) => {
-    try {
-      const message = generateMessage();
-      
-      const { data: leadData, error } = await supabase
-        .from('leads')
-        .insert({
-          lawyer_id: lawyerId,
-          client_name: data.name,
-          client_email: `cliente_${new Date().getTime()}@example.com`,
-          client_phone: data.phone,
-          case_area: areaName.toLowerCase(),
-          description: message,
-          status: 'pending'
-        })
-        .select();
-      
-      if (error) {
-        console.error('Erro ao criar lead:', error);
-        throw error;
-      }
-      
-      console.log('Lead criado com sucesso:', leadData);
-    } catch (error) {
-      console.error('Erro na função createLead:', error);
-      throw error;
     }
   };
 
