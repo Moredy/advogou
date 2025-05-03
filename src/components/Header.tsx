@@ -40,6 +40,18 @@ const Header: React.FC = () => {
               </Link>
             </nav>
             
+            {/* Lawyer login button - visible only on desktop */}
+            <div className="hidden md:block">
+              <Link to="/login">
+                <Button 
+                  variant="ghost" 
+                  className="text-juris-text hover:text-white hover:bg-transparent border border-white/20"
+                >
+                  Sou Advogado
+                </Button>
+              </Link>
+            </div>
+            
             {/* Mobile menu */}
             <div className="block md:hidden">
               <Drawer open={isOpen} onOpenChange={setIsOpen}>
@@ -74,6 +86,13 @@ const Header: React.FC = () => {
                     >
                       Contato
                     </Link>
+                    <Link 
+                      to="/login" 
+                      onClick={() => setIsOpen(false)}
+                      className="text-juris-text hover:text-white transition-colors px-2 py-2"
+                    >
+                      Sou Advogado
+                    </Link>
                   </div>
                   <DrawerFooter>
                     <DrawerClose asChild>
@@ -88,16 +107,6 @@ const Header: React.FC = () => {
                 </DrawerContent>
               </Drawer>
             </div>
-            
-            {/* Lawyer login button */}
-            <Link to="/login">
-              <Button 
-                variant="ghost" 
-                className="text-juris-text hover:text-white hover:bg-transparent border border-white/20"
-              >
-                Sou Advogado
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
