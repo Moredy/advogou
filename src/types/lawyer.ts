@@ -13,4 +13,5 @@ export type Lawyer = {
   phone?: string | null;
   plan_type?: string | null;
   subscription_active?: boolean;
+  gender?: string | null;
 };
