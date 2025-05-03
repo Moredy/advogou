@@ -151,15 +151,14 @@ const OnboardingForm: React.FC = () => {
       
       console.log("Buscando advogados para a área:", areaName.toLowerCase());
       
-      // CORREÇÃO: Removendo o filtro subscription_active para incluir advogados com plano gratuito
+      // Primeira tentativa: buscar advogados especializados na área específica
       const { data: lawyers, error: lawyersError } = await supabase
         .from('lawyers')
         .select('id, email, specialty, subscription_active, status')
         .eq('specialty', areaName.toLowerCase())
         .eq('status', 'approved')
         .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
-        .order('created_at', { ascending: true })
-        .limit(10);
+        .order('created_at', { ascending: true });
 
       if (lawyersError) {
         console.error('Erro ao buscar advogados:', lawyersError);
@@ -173,14 +172,13 @@ const OnboardingForm: React.FC = () => {
       if (!lawyers || lawyers.length === 0) {
         console.log("Nenhum advogado especializado encontrado, buscando qualquer advogado aprovado");
         
-        // CORREÇÃO: Também removendo o filtro subscription_active aqui
+        // Segunda tentativa: buscar qualquer advogado aprovado
         const { data: anyLawyers, error: anyLawyersError } = await supabase
           .from('lawyers')
           .select('id, email, specialty, subscription_active, status')
           .eq('status', 'approved')
           .not('email', 'in', `(${adminEmails.map(email => `'${email}'`).join(',')})`)
-          .order('created_at', { ascending: true })
-          .limit(10);
+          .order('created_at', { ascending: true });
           
         if (anyLawyersError) {
           console.error('Erro ao buscar qualquer advogado:', anyLawyersError);
@@ -188,6 +186,19 @@ const OnboardingForm: React.FC = () => {
         }
         
         console.log("Advogados gerais encontrados:", anyLawyers?.length || 0, anyLawyers);
+        
+        // Debug: buscar todos os advogados para verificar se existem no sistema
+        const { data: allLawyers, error: allLawyersError } = await supabase
+          .from('lawyers')
+          .select('id, email, specialty, status')
+          .order('created_at', { ascending: true });
+          
+        if (allLawyersError) {
+          console.error('Erro ao buscar todos os advogados:', allLawyersError);
+        } else {
+          console.log("Total de advogados no sistema:", allLawyers?.length || 0);
+          console.log("Status dos advogados:", allLawyers?.map(l => ({ email: l.email, status: l.status, specialty: l.specialty })));
+        }
         
         if (!anyLawyers || anyLawyers.length === 0) {
           // Nova lógica: mostrar mensagem que não há advogados disponíveis

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,12 @@ const AdminApprovals: React.FC = () => {
       }
       
       console.log("Advogados encontrados:", data?.length || 0);
+      console.log("Detalhes dos advogados:", data?.map(l => ({ 
+        id: l.id, 
+        email: l.email, 
+        specialty: l.specialty, 
+        status: l.status 
+      })));
       
       if (data) {
         setLawyers(data as Lawyer[]);
@@ -60,6 +67,8 @@ const AdminApprovals: React.FC = () => {
 
   const handleStatusChange = async (lawyerId: string, newStatus: LawyerStatus) => {
     try {
+      console.log(`Atualizando status do advogado ${lawyerId} para ${newStatus}`);
+      
       const { error } = await supabase
         .from('lawyers')
         .update({ status: newStatus })
@@ -69,6 +78,8 @@ const AdminApprovals: React.FC = () => {
         console.error("Erro ao atualizar status:", error);
         throw error;
       }
+
+      console.log(`Status atualizado com sucesso para ${newStatus}`);
 
       // Atualiza o estado local
       setLawyers(lawyers.map(lawyer => 
@@ -82,6 +93,9 @@ const AdminApprovals: React.FC = () => {
         description: `Advogado ${newStatus === 'approved' ? 'aprovado' : 'rejeitado'} com sucesso.`,
         variant: "default"
       });
+      
+      // Buscar novamente a lista atualizada
+      fetchLawyers();
     } catch (error) {
       console.error('Erro ao atualizar status do advogado:', error);
       toast({
