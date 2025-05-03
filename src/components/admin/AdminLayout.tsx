@@ -1,15 +1,18 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AdminLayout: React.FC = () => {
   const { isAuthenticated, isAdmin } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -28,16 +31,27 @@ const AdminLayout: React.FC = () => {
     }
   }, [isAuthenticated, navigate, isAdmin, toast]);
 
+  useEffect(() => {
+    // Fechar sidebar automaticamente em dispositivos móveis
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   if (!isAuthenticated) {
     return null;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader />
-      <div className="flex">
-        <AdminSidebar />
-        <main className="flex-1 p-6">
+      <AdminHeader toggleSidebar={toggleSidebar} />
+      <div className="flex relative">
+        <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block ${isMobile && sidebarOpen ? 'absolute z-50 h-[calc(100vh-64px)]' : ''}`}>
+          <AdminSidebar closeSidebar={() => isMobile && setSidebarOpen(false)} />
+        </div>
+        <main className={`flex-1 p-4 md:p-6 transition-all duration-200 ${sidebarOpen && isMobile ? 'opacity-30' : ''}`}>
           <Outlet />
         </main>
       </div>
