@@ -115,6 +115,15 @@ const OnboardingForm: React.FC = () => {
       ]
     },
     {
+      id: 'prefFeminina',
+      question: 'Caso você seja mulher, tem preferência pelo atendimento feminino?',
+      options: [
+        { id: 'sim', label: 'Sim, prefiro ser atendida por uma advogada', value: 'sim' },
+        { id: 'nao', label: 'Não, o gênero do(a) advogado(a) não importa', value: 'nao' },
+        { id: 'naomulher', label: 'Não sou uma mulher', value: 'naomulher' }
+      ]
+    },
+    {
       id: 'contact',
       question: 'Para conectá-lo com um advogado, precisamos de alguns dados',
       type: 'form'
@@ -145,14 +154,24 @@ const OnboardingForm: React.FC = () => {
   // Função refatorada para selecionar advogados mais adequados ao caso
   const findMatchingLawyer = async (areaName: string, detalhes: string) => {
     try {
-      // Consulta para encontrar apenas advogados aprovados e com inscrição ativa
-      const { data: lawyers, error: queryError } = await supabase
+      // Verificamos se o cliente prefere atendimento feminino
+      const prefereAdvogada = selections.prefFeminina === 'sim';
+      
+      // Base da consulta
+      let query = supabase
         .from('lawyers')
-        .select('id, email, specialty')
+        .select('id, email, specialty, gender')
         .eq('status', 'approved')  // Somente advogados aprovados pelo admin
         .eq('subscription_active', true)  // Com assinatura ativa
-        .neq('email', 'admin@jurisquick.com')  // Excluir o email do administrador
-        .order('created_at', { ascending: false });  // Priorizar os mais recentes
+        .neq('email', 'admin@jurisquick.com');  // Excluir o email do administrador
+      
+      // Adicionar filtro de gênero feminino se for solicitado
+      if (prefereAdvogada) {
+        query = query.eq('gender', 'feminino');
+      }
+      
+      // Finalizar a consulta ordenando por data de criação
+      const { data: lawyers, error: queryError } = await query.order('created_at', { ascending: false });
       
       if (queryError) {
         console.error('Erro ao consultar advogados:', queryError);
