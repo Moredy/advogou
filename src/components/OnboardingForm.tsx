@@ -156,19 +156,18 @@ const OnboardingForm: React.FC = () => {
       // Verificamos se o cliente prefere atendimento feminino
       const prefereAdvogada = selections.prefFeminina === 'sim';
       
-      // Base da consulta - note que removemos 'gender' da seleção já que não existe essa coluna
+      // Base da consulta
       let query = supabase
         .from('lawyers')
-        .select('id, email, specialty')
+        .select('id, email, specialty, gender')
         .eq('status', 'approved')  // Somente advogados aprovados pelo admin
         .eq('subscription_active', true)  // Com assinatura ativa
         .neq('email', 'admin@jurisquick.com');  // Excluir o email do administrador
       
-      // Comentamos o filtro de gênero feminino pois essa coluna não existe no banco ainda
-      // Se implementarmos este filtro no futuro, adicionaremos o código aqui
-      // if (prefereAdvogada) {
-      //   query = query.eq('gender', 'feminino');
-      // }
+      // Agora podemos usar o filtro de gênero pois a coluna existe no banco
+      if (prefereAdvogada) {
+        query = query.eq('gender', 'feminino');
+      }
       
       // Finalizar a consulta ordenando por data de criação
       const { data: lawyers, error: queryError } = await query.order('created_at', { ascending: false });
@@ -194,18 +193,6 @@ const OnboardingForm: React.FC = () => {
       
       // Se encontrarmos correspondências exatas, usaremos esses advogados
       if (exactMatches.length > 0) {
-        // Se precisar de uma advogada e não tivermos o filtro no banco ainda,
-        // vamos tentar filtrar no cliente (se tivermos dados de gênero)
-        if (prefereAdvogada) {
-          // Como ainda não temos o campo gender, não podemos filtrar por ele
-          // Este código está comentado e deve ser implementado quando o campo estiver disponível
-          // const femaleMatches = exactMatches.filter(lawyer => lawyer.gender === 'feminino');
-          // if (femaleMatches.length > 0) {
-          //   const selectedLawyer = femaleMatches[Math.floor(Math.random() * femaleMatches.length)];
-          //   return selectedLawyer;
-          // }
-        }
-        
         const selectedLawyer = exactMatches[Math.floor(Math.random() * exactMatches.length)];
         console.log("Advogado selecionado com match exato:", selectedLawyer);
         return selectedLawyer;
@@ -223,7 +210,6 @@ const OnboardingForm: React.FC = () => {
       
       // Se encontrarmos correspondências parciais, usaremos esses advogados
       if (partialMatches.length > 0) {
-        // Aplicar o mesmo filtro de gênero aqui se necessário (código comentado pelos mesmos motivos)
         const selectedLawyer = partialMatches[Math.floor(Math.random() * partialMatches.length)];
         console.log("Advogado selecionado com match parcial:", selectedLawyer);
         return selectedLawyer;

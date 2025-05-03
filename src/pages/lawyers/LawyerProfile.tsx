@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,7 @@ const LawyerProfile: React.FC = () => {
     email: lawyer?.email || "",
     phone: lawyer?.phone || "",
     oab_number: lawyer?.oab_number || "",
+    gender: lawyer?.gender || "masculino",
   });
   
   const [specialties, setSpecialties] = useState<string[]>([]);
@@ -39,6 +41,7 @@ const LawyerProfile: React.FC = () => {
         email: lawyer.email || "",
         phone: lawyer.phone || "",
         oab_number: lawyer.oab_number || "",
+        gender: lawyer.gender || "masculino",
       });
       
       // Importante: Garantir que as especialidades sejam carregadas corretamente
@@ -75,6 +78,7 @@ const LawyerProfile: React.FC = () => {
           email: personalInfo.email,
           phone: personalInfo.phone,
           oab_number: personalInfo.oab_number,
+          gender: personalInfo.gender,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -306,6 +310,23 @@ const LawyerProfile: React.FC = () => {
                       onChange={(e) => setPersonalInfo({ ...personalInfo, oab_number: e.target.value })}
                     />
                   </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gênero</Label>
+                  <Select 
+                    value={personalInfo.gender || "masculino"} 
+                    onValueChange={(value) => setPersonalInfo({ ...personalInfo, gender: value })}
+                  >
+                    <SelectTrigger id="gender">
+                      <SelectValue placeholder="Selecione seu gênero" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="masculino">Masculino</SelectItem>
+                      <SelectItem value="feminino">Feminino</SelectItem>
+                      <SelectItem value="outro">Outro/Não informar</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
               <CardFooter>

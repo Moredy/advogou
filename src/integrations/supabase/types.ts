@@ -43,6 +43,7 @@ export type Database = {
           bio: string | null
           created_at: string
           email: string
+          gender: string | null
           id: string
           name: string
           oab_number: string
@@ -57,6 +58,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           email: string
+          gender?: string | null
           id: string
           name: string
           oab_number: string
@@ -71,6 +73,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           email?: string
+          gender?: string | null
           id?: string
           name?: string
           oab_number?: string

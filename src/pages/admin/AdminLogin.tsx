@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
@@ -9,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -22,6 +24,7 @@ const registerSchema = z.object({
   email: z.string().email("E-mail inválido"),
   oabNumber: z.string().min(3, "Número OAB inválido"),
   specialty: z.string().min(3, "Especialidade deve ter pelo menos 3 caracteres"),
+  gender: z.string().min(1, "Selecione o gênero"),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
   confirmPassword: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -50,7 +53,8 @@ const AdminLogin: React.FC = () => {
       name: "",
       email: "",
       oabNumber: "",
-      specialty: "",
+      specialty: "Direito Civil",
+      gender: "masculino",
       password: "",
       confirmPassword: "",
     },
@@ -59,6 +63,19 @@ const AdminLogin: React.FC = () => {
   const [activeTab, setActiveTab] = useState("login");
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState("");
+
+  // Lista de especialidades disponíveis
+  const specialties = [
+    "Direito Civil", 
+    "Direito Penal", 
+    "Direito Tributário", 
+    "Direito do Consumidor",
+    "Direito Trabalhista", 
+    "Direito Empresarial", 
+    "Direito Imobiliário", 
+    "Direito Digital",
+    "Direito de Família"
+  ];
 
   // Redirecionar se já estiver logado
   useEffect(() => {
@@ -128,6 +145,7 @@ const AdminLogin: React.FC = () => {
           email: values.email,
           oab_number: values.oabNumber,
           specialty: values.specialty,
+          gender: values.gender,
         },
         values.password
       );
@@ -369,22 +387,60 @@ const AdminLogin: React.FC = () => {
 
                       <FormField
                         control={registerForm.control}
-                        name="specialty"
+                        name="gender"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Especialidade</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Direito Civil"
-                                disabled={isSubmitting}
-                              />
-                            </FormControl>
+                            <FormLabel>Gênero</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                              disabled={isSubmitting}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="masculino">Masculino</SelectItem>
+                                <SelectItem value="feminino">Feminino</SelectItem>
+                                <SelectItem value="outro">Outro/Não informar</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={registerForm.control}
+                      name="specialty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Especialidade</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                            disabled={isSubmitting}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione uma especialidade" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {specialties.map((specialty) => (
+                                <SelectItem key={specialty} value={specialty}>
+                                  {specialty}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <FormField
                       control={registerForm.control}
