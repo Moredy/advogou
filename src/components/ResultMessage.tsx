@@ -90,20 +90,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
         </div>
       )}
 
-      <Card className="card-custom mb-6">
-        <CardContent className="pt-6">
-          <p className="whitespace-pre-line text-juris-text mb-4">{message}</p>
-          <div className="flex items-center justify-end">
-            <button 
-              onClick={copyToClipboard}
-              className="text-juris-accent flex items-center text-sm"
-            >
-              <Copy size={16} className="mr-1" />
-              Copiar texto
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+
 
       <div className="space-y-4">
         {!noLawyersAvailable && (
