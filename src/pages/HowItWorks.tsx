@@ -151,9 +151,9 @@ const HowItWorks: React.FC = () => {
                 <Shield size={24} />
               </div>
               <div>
-                <h4 className="text-lg font-medium text-white">Advogados verificados</h4>
+                <h4 className="text-lg font-medium text-white">Advogados Verificados</h4>
                 <p className="text-juris-text text-opacity-80">
-                  Todos os advogados em nossa plataforma passam por um rigoroso processo de verificação, garantindo que você terá acesso apenas a profissionais qualificados e registrados na OAB.
+                  Todos os advogados em nossa plataforma passam por um rigoroso processo de verificação, garantindo que você terá acesso apenas a profissionais qualificados e credenciados na OAB.
                 </p>
               </div>
             </div>
