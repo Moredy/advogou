@@ -10,6 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import logo from '@/assets/logo-transparent-svg.svg';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +53,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center">
             <span className="font-poppins font-bold text-2xl text-white tracking-tight">
-              <img src="src/assets/logo-transparent-svg.svg" alt="Advogou Logo" className="h-[70px]" />
+              <img src={logo} alt="Advogou Logo" className="h-[70px]" />
             </span>
           </Link>
           
