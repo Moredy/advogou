@@ -26,7 +26,7 @@ const Index: React.FC = () => {
                 Responda algumas perguntasque te conectamos com um advogado especializado.
               </span>
               <span className="hidden md:block">
-                Você precisa de ajuda com uma questão jurídica? Responda algumas perguntas que te conectamos com um advogado especializado.
+                Você precisa de ajuda com uma questão jurídica? Responda algumas e receba orientação jurídica para seu caso.
               </span>
             </p>
           </div>

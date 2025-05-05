@@ -125,15 +125,6 @@ const OnboardingForm: React.FC = () => {
       ]
     },
     {
-      id: 'prefFeminina',
-      question: 'Caso você seja mulher, tem preferência pelo atendimento feminino?',
-      options: [
-        { id: 'sim', label: 'Sim, prefiro ser atendida por uma advogada', value: 'sim' },
-        { id: 'nao', label: 'Não, o gênero do(a) advogado(a) não importa', value: 'nao' },
-        { id: 'naomulher', label: 'Não sou uma mulher', value: 'naomulher' }
-      ]
-    },
-    {
       id: 'contact',
       question: 'Para conectá-lo com um advogado, precisamos de alguns dados',
       type: 'form'
@@ -165,7 +156,8 @@ const OnboardingForm: React.FC = () => {
   const findMatchingLawyer = async (areaName: string, detalhes: string) => {
     try {
       // Verificamos se o cliente prefere atendimento feminino
-      const prefereAdvogada = selections.prefFeminina === 'sim';
+      const prefereAdvogada = 'nao' 
+      //selections.prefFeminina === 'sim';
 
       // Base da consulta
       let query = supabase
