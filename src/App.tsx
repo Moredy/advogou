@@ -17,6 +17,9 @@ import AdminApprovals from "./pages/admin/AdminApprovals";
 import LawyerLayout from "./components/lawyers/LawyerLayout";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import TermsOfUse from "./pages/TermsOfUse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import About from "./pages/About";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +42,9 @@ const App = () => {
               <Route path="/como-funciona" element={<HowItWorks />} />
               <Route path="/contato" element={<Contact />} />
               <Route path="/login" element={<AdminLogin />} />
+              <Route path="/termos-de-uso" element={<TermsOfUse />} />
+              <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+              <Route path="/sobre" element={<About />} />
               
               {/* Admin routes */}
               <Route path="/admin" element={<AdminLayout />}>

@@ -23,10 +23,10 @@ const Index: React.FC = () => {
             </h1>
             <p className="text-left md:text-center text-base md:text-lg md:max-w-3xl md:mx-auto text-juris-text text-opacity-90">
               <span className="block md:hidden">
-                Responda algumas perguntas e receba o contato de um advogado especializado.
+                Responda algumas perguntasque te conectamos com um advogado especializado.
               </span>
               <span className="hidden md:block">
-                Você precisa de ajuda com uma questão jurídica? Responda algumas perguntas e receba o contato de um advogado especializado.
+                Você precisa de ajuda com uma questão jurídica? Responda algumas perguntas que te conectamos com um advogado especializado.
               </span>
             </p>
           </div>

@@ -54,9 +54,9 @@ const HowItWorks: React.FC = () => {
               <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-juris-accent flex items-center justify-center text-white font-bold text-lg">
                 2
               </div>
-              <h3 className="text-xl font-medium mb-3 text-white mt-4">Receba propostas personalizadas</h3>
+              <h3 className="text-xl font-medium mb-3 text-white mt-4">Encaminhamento Especializado</h3>
               <p className="text-juris-text text-opacity-80">
-                Advogados qualificados e verificados analisam seu caso e enviam propostas de atendimento com valores transparentes.
+                Nossa plataforma faz o diagnóstico jurídico do seu caso e direciona para o advogado.
               </p>
             </div>
             
@@ -64,9 +64,9 @@ const HowItWorks: React.FC = () => {
               <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-juris-accent flex items-center justify-center text-white font-bold text-lg">
                 3
               </div>
-              <h3 className="text-xl font-medium mb-3 text-white mt-4">Escolha o melhor profissional</h3>
+              <h3 className="text-xl font-medium mb-3 text-white mt-4">Orientação Jurídica</h3>
               <p className="text-juris-text text-opacity-80">
-                Compare as propostas, avalie o perfil dos advogados e escolha o que melhor atende às suas necessidades.
+                O advogado parceiro da plataforma, faz uma consulta inicial para avaliar seu caso, sem compromisso
               </p>
             </div>
           </div>

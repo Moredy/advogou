@@ -1,9 +1,10 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   const year = new Date().getFullYear();
-  
+
   return (
     <footer className="py-8 mt-12 border-t border-white border-opacity-10">
       <div className="container-custom">
@@ -14,15 +15,15 @@ const Footer: React.FC = () => {
             </p>
           </div>
           <div className="flex space-x-6">
-            <a href="#" className="text-juris-text text-opacity-70 hover:text-opacity-100 text-sm">
+            <Link to="/termos-de-uso" className="text-juris-text text-opacity-70 hover:text-opacity-100 text-sm">
               Termos de Uso
-            </a>
-            <a href="#" className="text-juris-text text-opacity-70 hover:text-opacity-100 text-sm">
+            </Link>
+            <Link to="/politica-de-privacidade" className="text-juris-text text-opacity-70 hover:text-opacity-100 text-sm">
               Política de Privacidade
-            </a>
-            <a href="#" className="text-juris-text text-opacity-70 hover:text-opacity-100 text-sm">
+            </Link>
+            <Link to="/sobre" className="text-juris-text text-opacity-70 hover:text-opacity-100 text-sm">
               Sobre
-            </a>
+            </Link>
           </div>
         </div>
       </div>

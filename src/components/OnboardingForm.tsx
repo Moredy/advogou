@@ -480,7 +480,7 @@ Obrigado.`;
                       Processando solicitação...
                     </>
                   ) : (
-                    "Enviar solicitação"
+                    "Encontrar Advogado"
                   )}
                 </Button>
               </form>
