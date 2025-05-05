@@ -23,10 +23,10 @@ const Index: React.FC = () => {
             </h1>
             <p className="text-left md:text-center text-base md:text-lg md:max-w-3xl md:mx-auto text-juris-text text-opacity-90">
               <span className="block md:hidden">
-                  Com apenas alguns cliques, fale com um advogado especializado e regularizado na OAB.
+                  Com apenas alguns cliques, fale com um advogado especializado e credenciado pela OAB.
               </span>
               <span className="hidden md:block">
-                Você precisa de ajuda com uma questão jurídica? Com apenas alguns cliques, fale com um advogado especializado e regularizado na OAB.
+                Você precisa de ajuda com uma questão jurídica? Com apenas alguns cliques, fale com um advogado especializado e credenciado pela OAB.
               </span>
             </p>
           </div>
