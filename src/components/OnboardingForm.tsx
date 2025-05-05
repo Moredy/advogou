@@ -70,6 +70,7 @@ const OnboardingForm: React.FC = () => {
               { id: 'demissao', label: 'Fui demitido injustamente', value: 'demissao' },
               { id: 'salario', label: 'Não recebi salário ou benefícios', value: 'salario' },
               { id: 'acidente_trab', label: 'Sofri um acidente no trabalho', value: 'acidente_trab' },
+              { id: 'sem_carteira', label: 'Trabalhava sem carteira', value: 'sem_carteira' },
               { id: 'outro_trab', label: 'Outro problema trabalhista', value: 'outro_trab' }
             ];
           case 'divida':
