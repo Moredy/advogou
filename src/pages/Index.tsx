@@ -19,11 +19,11 @@ const Index: React.FC = () => {
         >
           <div className="px-4 md:px-0">
             <h1 className="text-left md:text-center text-2xl md:text-4xl font-semibold mb-4 text-white">
-              Conectamos você ao advogado ideal
+              Sofreu alguma injustiça?
             </h1>
             <p className="text-left md:text-center text-base md:text-lg md:max-w-3xl md:mx-auto text-juris-text text-opacity-90">
               <span className="block md:hidden">
-                Responda algumas perguntasque te conectamos com um advogado especializado.
+                Responda algumas perguntas e receba orientação jurídica para seu caso.
               </span>
               <span className="hidden md:block">
                 Você precisa de ajuda com uma questão jurídica? Responda algumas e receba orientação jurídica para seu caso.
@@ -61,7 +61,7 @@ const Index: React.FC = () => {
             <div className="card-custom">
               <h3 className="text-xl font-medium mb-3 text-white">Especialistas Qualificados</h3>
               <p className="text-juris-text text-opacity-80">
-                Conectamos você apenas com advogados especializados em sua área de necessidade.
+                Todos os profissionais parceiros passam por um rigoroso processo de avaliação antes de serem indicados.
               </p>
             </div>
 
