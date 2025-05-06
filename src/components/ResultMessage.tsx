@@ -49,7 +49,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
   if (!phoneNumber.startsWith('55')) {
     phoneNumber = `55${phoneNumber}`;
   }
-  const encodedMessage = encodeURIComponent(`Olá! Estou buscando atendimento urgente. Sou cliente do Advogou.com`);s
+  const encodedMessage = encodeURIComponent(`Olá! Estou buscando atendimento urgente. Sou cliente do Advogou.com`);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
   
   const copyToClipboard = () => {
