@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from "framer-motion";
 import QuestionStep, { Option } from './QuestionStep';
 import ResultMessage from './ResultMessage';
@@ -37,7 +37,9 @@ const OnboardingForm: React.FC = () => {
   const [lawyerId, setLawyerId] = useState<string | null>(null);
   const [lawyerContactInfo, setLawyerContactInfo] = useState<LawyerInfo | null>(null)
   const [noLawyersAvailable, setNoLawyersAvailable] = useState(false);
+  const [caseSummary, setCaseSummary] = useState<string | null>(null);
   const { toast } = useToast();
+
 
   const contactForm = useForm<ContactInfo>({
     defaultValues: {
@@ -156,7 +158,7 @@ const OnboardingForm: React.FC = () => {
   const findMatchingLawyer = async (areaName: string, detalhes: string) => {
     try {
       // Verificamos se o cliente prefere atendimento feminino
-      const prefereAdvogada = 'nao' 
+      const prefereAdvogada = 'nao'
       //selections.prefFeminina === 'sim';
 
       // Base da consulta
@@ -248,28 +250,32 @@ const OnboardingForm: React.FC = () => {
         setNoLawyersAvailable(true);
 
         // Criar lead para administração revisar posteriormente
-        const message = generateMessage();
+
+        const summary = await generateCaseSummaryWithAI();
+        setCaseSummary(summary); // Atualiza o estado para exibir no componente depois
+
         await createLead({
           lawyer_id: ADMIN_FALLBACK_ID,
           client_name: data.name,
           client_email: `cliente_${new Date().getTime()}@example.com`,
           client_phone: data.phone,
           case_area: areaName.toLowerCase(),
-          description: message,
+          description: summary,
           status: 'pending'
         });
 
         setLawyerId(ADMIN_FALLBACK_ID);
       } else {
-        // Criar o lead com o advogado selecionado
-        const message = generateMessage();
+        const summary = await generateCaseSummaryWithAI();
+        setCaseSummary(summary); // Atualiza o estado para exibir no componente depois
+
         await createLead({
           lawyer_id: matchingLawyer.id,
           client_name: data.name,
           client_email: `cliente_${new Date().getTime()}@example.com`,
           client_phone: data.phone,
           case_area: areaName.toLowerCase(),
-          description: message,
+          description: summary,
           status: 'pending'
         });
         setLawyerContactInfo(matchingLawyer)
@@ -307,62 +313,26 @@ const OnboardingForm: React.FC = () => {
     return areaNames[technicalArea] || 'Direito';
   };
 
-  const getProblemDescription = (): string => {
-    // Obter descrição do problema baseado nas seleções
-    const situacao = selections.situacao;
-    const problema = selections.problema;
-    const detalhe = selections.detalhe;
 
-    let descricao = '';
+  const generateCaseSummaryWithAI = async (): Promise<string> => {
 
-    // Descrição baseada na situação
-    const situacaoDescricoes: Record<string, string> = {
-      'orientacao': 'preciso apenas de orientação jurídica sobre',
-      'processo': 'desejo entrar com um processo relacionado a',
-      'citado': 'fui citado em um processo envolvendo'
-    };
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImprbXN4c2tsZWhvdmx2aGZiYXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxOTk4OTAsImV4cCI6MjA2MTc3NTg5MH0.Vs74RxdFuz_uK1VtAsXcnIJse4E_gsjqgvCIHLdMInk";
 
-    descricao = situacaoDescricoes[situacao] || '';
+    const res = await fetch('https://jkmsxsklehovlvhfbazh.supabase.co/functions/v1/generate-summary', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseAnonKey!,
+        'Authorization': `Bearer ${supabaseAnonKey!}` // obrigatório para funções protegidas
+      },
+      body: JSON.stringify({ selections }),
+    });
 
-    // Mapeamento de problemas para descrições mais detalhadas
-    const problemaDescricoes: Record<string, string> = {
-      'trabalho': 'um problema trabalhista',
-      'divida': 'uma questão relacionada a dívidas ou consumo',
-      'familia': 'uma questão familiar',
-      'imovel': 'um problema imobiliário',
-      'acidente': 'um acidente ou dano sofrido'
-    };
-
-    descricao += ' ' + (problemaDescricoes[problema] || 'uma questão jurídica');
-
-    // Adicionar detalhes específicos se disponíveis
-    if (detalhe) {
-      // Poderíamos adicionar mais detalhes específicos aqui se necessário
-      descricao += ` (${detalhe})`;
-    }
-
-    return descricao;
-  };
-
-  const generateMessage = (): string => {
-    const area = getAreaName();
-    const problemDesc = getProblemDescription();
-    const urgencia = selections.urgencia === 'alta'
-      ? 'muito urgente'
-      : selections.urgencia === 'media'
-        ? 'urgente'
-        : 'não urgente';
-
-    const name = contactInfo?.name || '';
-
-    return `Olá, me chamo ${name} e encontrei seu contato pelo Advogou.com.
-
-${problemDesc.charAt(0).toUpperCase() + problemDesc.slice(1)}.
-A situação é ${urgencia} para mim.
-
-Poderia me ajudar com algumas orientações iniciais, por favor?
-
-Obrigado.`;
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erro ao gerar resumo");
+    console.log(data)
+    setCaseSummary(data.summary)
+    return data.summary;
   };
 
   const handleRestart = () => {
@@ -389,26 +359,26 @@ Obrigado.`;
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-<div className="mb-6 px-4">
-  <div className="flex space-x-2 justify-center mb-2">
-    {steps.map((_, index) => (
-      <div
-        key={index}
-        className={`h-2 w-10 rounded-full ${index <= currentStep ? 'bg-juris-accent' : 'bg-white bg-opacity-20'}`}
-      />
-    ))}
-  </div>
-  {currentStep > 0 && currentStep < steps.length && (
-    <div className="text-right">
-      <button
-        onClick={() => setCurrentStep(prev => prev - 1)}
-        className="text-sm text-juris-text text-opacity-70 hover:text-opacity-100"
-      >
-        Voltar
-      </button>
-    </div>
-  )}
-</div>
+      <div className="mb-6 px-4">
+        <div className="flex space-x-2 justify-center mb-2">
+          {steps.map((_, index) => (
+            <div
+              key={index}
+              className={`h-2 w-10 rounded-full ${index <= currentStep ? 'bg-juris-accent' : 'bg-white bg-opacity-20'}`}
+            />
+          ))}
+        </div>
+        {currentStep > 0 && currentStep < steps.length && (
+          <div className="text-right">
+            <button
+              onClick={() => setCurrentStep(prev => prev - 1)}
+              className="text-sm text-juris-text text-opacity-70 hover:text-opacity-100"
+            >
+              Voltar
+            </button>
+          </div>
+        )}
+      </div>
 
       {currentStep < steps.length && (
         <div className="animate-fade-in step-transition">
@@ -452,7 +422,7 @@ Obrigado.`;
                           onChange={(e) => {
                             // Remove caracteres não numéricos e limita a 11 dígitos
                             const numbers = e.target.value.replace(/\D/g, '').slice(0, 11);
-                            
+
                             // Salva apenas os números no control
                             field.onChange(numbers);
                           }}
@@ -524,17 +494,17 @@ Obrigado.`;
               </AlertDescription>
             </Alert>
           )}
-          {lawyerContactInfo && 
-          <ResultMessage
-            message={generateMessage()}
-            areaExpert={getAreaName()}
-            contactInfo={contactInfo}
-            matchingLawyer={lawyerContactInfo}
-            isActive={true}
-            onRestart={handleRestart}
-            lawyerId={lawyerId}
-            noLawyersAvailable={noLawyersAvailable}
-          />}
+          {lawyerContactInfo &&
+            <ResultMessage
+              message={caseSummary}
+              areaExpert={getAreaName()}
+              contactInfo={contactInfo}
+              matchingLawyer={lawyerContactInfo}
+              isActive={true}
+              onRestart={handleRestart}
+              lawyerId={lawyerId}
+              noLawyersAvailable={noLawyersAvailable}
+            />}
         </>
       )}
     </motion.div>
