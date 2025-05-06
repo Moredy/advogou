@@ -395,10 +395,10 @@ const OnboardingForm: React.FC = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Nome completo</FormLabel>
+                      <FormLabel className="text-white">Nome</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Digite seu nome completo"
+                          placeholder="Digite seu nome"
                           {...field}
                           className="bg-white bg-opacity-5 border-white border-opacity-20 text-white"
                           required
