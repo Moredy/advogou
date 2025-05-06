@@ -255,9 +255,17 @@ const OnboardingForm: React.FC = () => {
         const summary = await generateCaseSummaryWithAI();
         setCaseSummary(summary); // Atualiza o estado para exibir no componente depois
 
+        function toTitleCase(str: string): string {
+          return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        }
+
         await createLead({
           lawyer_id: ADMIN_FALLBACK_ID,
-          client_name: data.name,
+          client_name: toTitleCase(data.name),
           client_email: `cliente_${new Date().getTime()}@example.com`,
           client_phone: data.phone,
           case_area: areaName.toLowerCase(),
