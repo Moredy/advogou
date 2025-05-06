@@ -19,6 +19,7 @@ interface ContactInfo {
 
 interface LawyerInfo {
   id: string;
+  name:string;
   email: string;
   specialty: string;
   gender: string;
@@ -164,7 +165,7 @@ const OnboardingForm: React.FC = () => {
       // Base da consulta
       let query = supabase
         .from('lawyers')
-        .select('id, email, specialty, gender, phone',)
+        .select('id, name, email, specialty, gender, phone',)
         .eq('status', 'approved')  // Somente advogados aprovados pelo admin
         .eq('subscription_active', true)  // Com assinatura ativa
         .neq('email', 'admin@jurisquick.com')  // Excluir o email do administrador

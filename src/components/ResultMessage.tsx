@@ -12,6 +12,7 @@ interface ContactInfo {
 
 interface LawyerInfo {
   id: string;
+  name:string;
   email: string;
   specialty: string;
   gender: string;
@@ -49,7 +50,7 @@ const ResultMessage: React.FC<ResultMessageProps> = ({
   if (!phoneNumber.startsWith('55')) {
     phoneNumber = `55${phoneNumber}`;
   }
-  const encodedMessage = encodeURIComponent(`Olá! Estou buscando atendimento urgente. Sou cliente do Advogou.com`);
+  const encodedMessage = encodeURIComponent(`Olá ${matchingLawyer.name.split(` `[0])}! Estou buscando atendimento urgente. Sou cliente do Advogou.com`);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
   
   const copyToClipboard = () => {
