@@ -305,42 +305,51 @@ const LawyerLeads: React.FC = () => {
         <div className="grid gap-4">
           {filteredLeads.length > 0 ? (
             filteredLeads.map((lead) => (
-              <Card key={lead.id} className="overflow-hidden">
+              <Card key={lead.id} className="overflow-hidden border-l-4 hover:shadow-md transition-shadow" 
+                    style={{ borderLeftColor: getStatusColor(lead.status) }}>
                 <div className="flex flex-col md:flex-row">
                   <div className="flex-1 p-6">
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="font-medium">{lead.client_name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          <span>{lead.case_area}</span>
-                          <span>•</span>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-lg">{lead.client_name}</h3>
+                          <Badge className={getStatusLabel(lead.status).color + " ml-2"}>
+                            {getStatusLabel(lead.status).text}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2">
+                          <span className="font-medium text-juris-accent">{lead.case_area}</span>
+                          <span className="text-gray-300">•</span>
                           <span>{formatDate(lead.created_at)}</span>
+                          
                           {lead.client_phone && (
                             <>
-                              <span>•</span>
+                              <span className="text-gray-300">•</span>
                               <a 
                                 href={`tel:${lead.client_phone}`} 
                                 className="flex items-center text-juris-accent hover:underline"
                               >
-                                <Phone size={14} className="mr-1" />
+                                <Phone size={16} className="mr-1" />
                                 {formatPhone(lead.client_phone)}
                               </a>
                             </>
                           )}
                         </div>
                       </div>
-                      <Badge className={getStatusLabel(lead.status).color}>
-                        {getStatusLabel(lead.status).text}
-                      </Badge>
                     </div>
                     
-                    <p className="text-sm mt-4 line-clamp-2">{lead.description}</p>
+                    <div className="bg-gray-50 p-3 rounded-md mb-4 border border-gray-100">
+                      <h4 className="text-xs uppercase text-gray-500 font-medium mb-1">Mensagem do cliente</h4>
+                      <p className="text-sm">{lead.description}</p>
+                    </div>
                     
                     <div className="flex items-center gap-2 mt-4 flex-wrap">
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => handleOpenLead(lead.id)}
+                        className="bg-white"
                       >
                         {lead.quality_rating !== undefined ? "Ver detalhes" : "Avaliar lead"}
                       </Button>
@@ -350,6 +359,7 @@ const LawyerLeads: React.FC = () => {
                           variant="outline" 
                           size="sm"
                           onClick={() => handleUpdateStatus(lead.id, "contacted")}
+                          className="bg-white border-blue-500 text-blue-600 hover:bg-blue-50"
                         >
                           Marcar como contatado
                         </Button>
@@ -360,7 +370,7 @@ const LawyerLeads: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            className="text-green-600 border-green-600 hover:bg-green-50"
+                            className="bg-white text-green-600 border-green-600 hover:bg-green-50"
                             onClick={() => handleUpdateStatus(lead.id, "converted")}
                           >
                             Converter lead
@@ -368,7 +378,7 @@ const LawyerLeads: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            className="text-red-600 border-red-600 hover:bg-red-50"
+                            className="bg-white text-red-600 border-red-600 hover:bg-red-50"
                             onClick={() => handleUpdateStatus(lead.id, "not_converted")}
                           >
                             Não convertido
@@ -518,6 +528,22 @@ const LawyerLeads: React.FC = () => {
       </Sheet>
     </div>
   );
+};
+
+// Helper function to get the status color for the left border
+const getStatusColor = (status: LeadStatus): string => {
+  switch (status) {
+    case "pending":
+      return "#f59e0b"; // Amber/yellow
+    case "contacted":
+      return "#3b82f6"; // Blue
+    case "converted":
+      return "#10b981"; // Green
+    case "not_converted":
+      return "#ef4444"; // Red
+    default:
+      return "#d1d5db"; // Gray
+  }
 };
 
 export default LawyerLeads;

@@ -49,18 +49,19 @@ const LawyerDashboard: React.FC = () => {
   const isApproved = lawyer?.status === "approved";
   
   useEffect(() => {
-    if (user) {
+    if (user && lawyer) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, lawyer]);
 
   const fetchDashboardData = async () => {
-    if (!user) return;
+    if (!user || !lawyer) return;
 
     setLoading(true);
     try {
       // Only fetch leads if lawyer is approved
       if (isApproved) {
+        console.log("Advogado aprovado, buscando leads...");
         // Buscar todos os leads do advogado
         const { data: leadsData, error: leadsError } = await supabase
           .from('leads')
@@ -69,6 +70,8 @@ const LawyerDashboard: React.FC = () => {
 
         if (leadsError) throw leadsError;
 
+        console.log("Leads encontrados:", leadsData?.length || 0);
+        
         // Calcular estatísticas
         const leads = leadsData || [];
         const totalLeads = leads.length;
@@ -101,6 +104,7 @@ const LawyerDashboard: React.FC = () => {
           })));
         }
       } else {
+        console.log("Advogado não aprovado, resetando estatísticas");
         // Reset stats for unapproved lawyers
         setStats({
           leadsReceived: 0,
@@ -215,9 +219,6 @@ const LawyerDashboard: React.FC = () => {
           })}
         </div>
       </div>
-
-
-
 
       {!isAdmin && !isApproved && (
         <Alert variant="warning">
@@ -357,6 +358,18 @@ const LawyerDashboard: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Botão de atualização */}
+      <div className="flex justify-center mt-6">
+        <Button 
+          onClick={fetchDashboardData} 
+          className="flex items-center"
+          disabled={loading}
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Atualizar Dados
+        </Button>
+      </div>
     </div>
   );
 };

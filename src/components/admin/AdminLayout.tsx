@@ -6,30 +6,48 @@ import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Loader2 } from "lucide-react";
 
 const AdminLayout: React.FC = () => {
-  const { isAuthenticated, isAdmin } = useAdminAuth();
+  const { isAuthenticated, isAdmin, user } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
+    // Add a short delay to ensure authentication state is fully loaded
+    const checkAuthTimer = setTimeout(() => {
+      console.log("Admin auth check - Auth state:", { isAuthenticated, isAdmin, user });
+      
+      if (!isAuthenticated && user === null) {
+        console.log("User not authenticated, redirecting to login");
+        toast({
+          title: "Faça login",
+          description: "Você precisa estar logado para acessar esta página.",
+          variant: "default"
+        });
+        navigate("/login");
+        return;
+      }
 
-    if (!isAdmin) {
-      // Notificar o usuário e redirecionar para o dashboard de advogados
-      toast({
-        title: "Acesso restrito",
-        description: "Você não tem permissão para acessar o painel administrativo.",
-        variant: "destructive"
-      });
-      navigate("/advogado/dashboard");
-    }
-  }, [isAuthenticated, navigate, isAdmin, toast]);
+      if (!isAdmin) {
+        // Notificar o usuário e redirecionar para o dashboard de advogados
+        console.log("User is not admin, redirecting to lawyer dashboard");
+        toast({
+          title: "Acesso restrito",
+          description: "Você não tem permissão para acessar o painel administrativo.",
+          variant: "destructive"
+        });
+        navigate("/advogado/dashboard");
+      }
+      
+      setIsLoading(false);
+    }, 500); // Short delay to ensure auth state is loaded
+
+    return () => clearTimeout(checkAuthTimer);
+  }, [isAuthenticated, navigate, isAdmin, toast, user]);
 
   useEffect(() => {
     // Fechar sidebar automaticamente em dispositivos móveis
@@ -39,6 +57,18 @@ const AdminLayout: React.FC = () => {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-juris-accent mb-2" />
+          <p className="text-gray-600">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;
