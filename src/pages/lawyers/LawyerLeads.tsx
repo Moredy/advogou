@@ -340,7 +340,7 @@ const LawyerLeads: React.FC = () => {
                     </div>
                     
                     <div className="bg-gray-50 p-3 rounded-md mb-4 border border-gray-100">
-                      <h4 className="text-xs uppercase text-gray-500 font-medium mb-1">Mensagem do cliente</h4>
+                      <h4 className="text-xs uppercase text-gray-500 font-medium mb-1">RESUMO GERADO COM IA</h4>
                       <p className="text-sm">{lead.description}</p>
                     </div>
                     
