@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import About from "./pages/About";
+import LandingPageTrabalhista from "./pages/lp/trabalhista";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,7 +63,7 @@ const App = () => {
 
               {/* Redirect /advogado to /advogado/dashboard */}
               <Route path="/advogado" element={<Navigate replace to="/advogado/dashboard" />} />
-              
+              <Route path="/trabalhista" element={<LandingPageTrabalhista/>}></Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
