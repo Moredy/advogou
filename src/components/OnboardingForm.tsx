@@ -99,6 +99,7 @@ const OnboardingForm: React.FC = () => {
             ];
           case 'acidente':
             return [
+              { id: 'no_trabalho', label: 'Acidente no trabalho', value: 'no_trabalho' },
               { id: 'transito', label: 'Acidente de trânsito', value: 'transito' },
               { id: 'medico', label: 'Erro médico', value: 'medico' },
               { id: 'queda', label: 'Queda ou acidente em estabelecimento', value: 'queda' },
