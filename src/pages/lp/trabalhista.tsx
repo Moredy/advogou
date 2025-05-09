@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Phone, ArrowRight, Briefcase, Gavel, HandshakeIcon, MessageSquare } from 'lucide-react';
+import { Phone, ArrowRight, Briefcase, Gavel, HandshakeIcon, MessageSquare, FileText, Shield, Check } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,8 +12,11 @@ import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { createLead } from '@/api/createLeadFunction';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 // Form schema for validation
 const phoneSchema = z.object({
@@ -23,6 +26,56 @@ const phoneSchema = z.object({
         .max(15, { message: 'O telefone não deve ter mais de 15 dígitos' })
         .regex(/^[\d\s()-]+$/, { message: 'Formato de telefone inválido' }),
 });
+
+// Lawyer Card Component
+interface BadgeProps {
+    icon: React.ReactNode;
+    text: string;
+}
+
+const Badge: React.FC<BadgeProps> = ({ icon, text }) => {
+    return (
+        <div className="inline-flex items-center gap-1.5 bg-yellow-400 bg-opacity-20 text-yellow-400 px-3 py-1 rounded text-sm">
+            {icon}
+            <span>{text}</span>
+        </div>
+    );
+};
+
+
+interface LawyerCardProps {
+    image: string;
+    name: string;
+    role: string;
+    quote: string;
+    badges: BadgeProps[];
+}
+
+const LawyerCard: React.FC<LawyerCardProps> = ({ image, name, role, quote, badges }) => {
+    return (
+        <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-[#9b87f5]/30 transition-all duration-300 overflow-hidden">
+            <div className="h-64 overflow-hidden">
+                <img
+                    src={image}
+                    alt={name}
+                    className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500"
+                />
+            </div>
+            <div className="p-6">
+                <h3 className="text-xl font-bold text-white mb-1">{name}</h3>
+                <p className="text-yellow-400 mb-4">{role}</p>
+                <p className="text-juris-text text-opacity-90 mb-4">
+                    {quote}
+                </p>
+                <div className="flex flex-wrap gap-2 mt-4">
+                    {badges.map((badge, index) => (
+                        <Badge key={index} icon={badge.icon} text={badge.text} />
+                    ))}
+                </div>
+            </div>
+        </Card>
+    );
+};
 
 const TrabalhistaExpress: React.FC = () => {
     const { toast } = useToast();
@@ -112,8 +165,8 @@ const TrabalhistaExpress: React.FC = () => {
             return null;
         }
     };
-
-    const onSubmit = async (data: z.infer<typeof phoneSchema>) => {
+    //    const onSubmit = async (data: z.infer<typeof phoneSchema>) => {
+    const onSubmit = async () => {
         setIsSubmitting(true);
 
         try {
@@ -124,7 +177,7 @@ const TrabalhistaExpress: React.FC = () => {
                 lawyer_id: matchingLawyer.id,
                 client_name: 'Não informado',
                 client_email: `cliente_${new Date().getTime()}@example.com`,
-                client_phone: data.phone,
+                client_phone: `55555555555`,//data.phone,
                 case_area: 'Direito Trabalhista'.toLowerCase(),
                 description: 'Cliente solicitou contato rápido através da página de acesso rapido.',
                 status: 'pending'
@@ -164,7 +217,7 @@ const TrabalhistaExpress: React.FC = () => {
         if (numbers.length <= 2) return numbers;
         if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
         return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}${numbers.slice(7, 11)}`;
-      };
+    };
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-juris-dark to-black">
@@ -173,16 +226,16 @@ const TrabalhistaExpress: React.FC = () => {
             <main className="flex-grow container-custom py-8 md:py-16">
                 {/* Hero Section */}
                 <motion.div
-                    className="text-center mb-12 md:mb-16"
+                    className="text-left px-[30px] md:text-center mb-12 md:mb-16"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
                     <h1 className="text-2xl md:text-4xl font-semibold mb-4 text-white">
-                        Nós podemos te ajudar a recuperar o que é seu
+                        Sofreu Injustiça no Trabalho?
                     </h1>
                     <p className="text-lg md:text-xl max-w-3xl mx-auto text-juris-text text-opacity-90">
-                        Já ajudamos mais de mil pessoas a recuperar seus direitos no trabalho
+                        Receba orientação de um de nossos advogados
                     </p>
                 </motion.div>
 
@@ -228,10 +281,13 @@ const TrabalhistaExpress: React.FC = () => {
                                     )}
                                 />
 
+
+
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
                                     className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6"
+
                                 >
                                     {isSubmitting ? (
                                         "Enviando..."
@@ -246,114 +302,141 @@ const TrabalhistaExpress: React.FC = () => {
                         </Form>
 
                         <p className="text-sm text-gray-400 mt-4 text-center">
-                            Seus dados estão seguros e protegidos.
+                            Garantimos total sigilo e proteção dos seus dados
                         </p>
                     </div>
-                </motion.div>
+                </motion.div >
+
+                {/* NEW SECTION: Team experts */}
+                < motion.div
+                    className="mt-16 md:mt-24 mb-20"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                    <h2 className="text-2xl md:text-3xl font-medium mb-8 text-white text-center">
+                        Profissional destaque
+                    </h2>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <LawyerCard
+                            image="https://images.unsplash.com/photo-1615348411055-3492a2c76ca2?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                            name="Dra. Márcia Maria"
+                            role="Especialista em Direito Trabalhista"
+                            quote="15 anos defendendo direitos de trabalhadores com mais de 800 casos bem-sucedidos. Especializado em causas complexas e disputas trabalhistas de alto valor."
+                            badges={[
+                                { icon: <Gavel size={14} />, text: "15+ anos de experiência" },
+                                { icon: <FileText size={14} />, text: "800+ casos resolvidos" }
+                            ]}
+                        />
+
+
+                    </div>
+                </motion.div >
+
+                {/* CTA para começar */}
+                < motion.div
+                    className="text-left mt-16 mb-16 p-8"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1.2 }}
+                >
+                    <h2 className="text-2xl font-medium mb-4 text-white">
+                        Precisa de orientação?
+                    </h2>
+                    <p className="text-juris-text text-opacity-80 mb-8 max-w-2xl mx-auto">
+                        Agende uma conversa sem compromisso para tirar suas dúvidas a respeito dos seus direitos no trabalho
+                    </p>
+
+                    <Button className="w-full mb-5 bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6">
+                        Encontrar um advogado
+                    </Button>
+                </motion.div >
+
+                {/* FAQ - Perguntas Frequentes */}
+                < motion.div
+                    className="mb-16"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.0 }}
+                >
+                    <h2 className="text-xl md:text-3xl font-medium mb-6 text-white text-center">
+                        Dúvidas frequentes
+                    </h2>
+
+                    <Accordion type="single" collapsible className="card-custom">
+                        <AccordionItem value="item-1" className="border-white/10">
+                            <AccordionTrigger className="text-white hover:no-underline">
+                                Quais são os direitos de quem trabalha sem carteira assinada?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-juris-text">
+                                Mesmo sem carteira assinada, o trabalhador tem direito a todos os benefícios legais, como férias, 13º salário, FGTS, horas extras, e adicional noturno. É possível acionar a Justiça para regularizar a situação e receber os valores devidos.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-2" className="border-white/10">
+                            <AccordionTrigger className="text-white hover:no-underline">
+                                Quanto tempo tenho para entrar com um processo trabalhista?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-juris-text">
+                                O prazo é de até 2 anos após o fim do contrato de trabalho, cobrando valores referentes aos últimos 5 anos.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-3" className="border-white/10">
+                            <AccordionTrigger className="text-white hover:no-underline">
+                                Fui demitido sem justa causa. Quais são meus direitos?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-juris-text">
+                                Você tem direito a aviso prévio, saldo de salário, férias acrescidas de um terço, 13º salário proporcional, multa de 40% sobre o FGTS, saque do FGTS e seguro-desemprego.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-4" className="border-white/10">
+                            <AccordionTrigger className="text-white hover:no-underline">
+                                E se eu não gostar das propostas recebidas?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-juris-text">
+                                Você não tem nenhuma obrigação de aceitar as propostas. Se preferir, pode solicitar novas propostas ou refinar sua busca para encontrar o advogado ideal para seu caso.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-5" className="border-white/10">
+                            <AccordionTrigger className="text-white hover:no-underline">
+                            Sofri um acidente de trabalho. Quais são meus direitos?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-juris-text">
+                            Se você sofreu um acidente durante o trabalho ou no trajeto entre sua casa e a empresa, tem direito a estabilidade no emprego por 12 meses após o retorno, auxílio-doença acidentário (caso precise se afastar por mais de 15 dias), além de eventual indenização por danos morais ou materiais, se houver culpa da empresa. A empresa também deve emitir a CAT (Comunicação de Acidente de Trabalho), mesmo que o acidente pareça leve.
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </motion.div >
+
+
 
                 {/* Why Choose Us Section */}
-                <motion.div
+                < motion.div
                     className="mt-26 md:mt-36"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 0.4 }}
                 >
-                    <h2 className="text-2xl md:text-3xl font-medium mb-8 text-white text-center">
-                        Por que escolher o Advogou para questões trabalhistas?
-                    </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={<Briefcase />}
-                            title="Especialização em Direito do Trabalho"
-                            description="Nossos advogados são especialistas em direito trabalhista, com experiência em todos os tipos de causas."
-                        />
+                </motion.div >
 
-                        <FeatureCard
-                            icon={<MessageSquare />}
-                            title="Atendimento Personalizado"
-                            description="Entendemos que cada caso é único. Você terá atenção dedicada para seu problema específico."
-                        />
 
-                        <FeatureCard
-                            icon={<HandshakeIcon />}
-                            title="Transparência Total"
-                            description="Valores claros seguindo a tabela da OAB. Sem surpresas ou custos ocultos no processo."
-                        />
-
-                        <FeatureCard
-                            icon={<Gavel />}
-                            title="Soluções Eficazes"
-                            description="Buscamos os melhores resultados, seja através de acordos ou representação em processos judiciais."
-                        />
-
-                        <FeatureCard
-                            icon={<Phone />}
-                            title="Rapidez no Contato"
-                            description="Compromisso de retorno em até 24 horas após seu cadastro. Sua urgência é nossa prioridade."
-                        />
-
-                        <FeatureCard
-                            icon={<ArrowRight />}
-                            title="Processo Simplificado"
-                            description="Sem burocracia. Apenas deixe seu telefone e aguarde o contato de um especialista."
-                        />
-                    </div>
-                </motion.div>
-
-                {/* Employment Law Info Section */}
-                <motion.div
-                    className="mt-16 md:mt-24 bg-white bg-opacity-5 p-8 rounded-lg border border-white border-opacity-10"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                >
-                    <h2 className="text-2xl md:text-3xl font-medium mb-6 text-white">
-                        Direito Trabalhista: Como podemos ajudar
-                    </h2>
-
-                    <div className="space-y-6 text-juris-text">
-                        <p>
-                            Especialistas da Advogou podem auxiliar em diversos problemas trabalhistas, como:
-                        </p>
-
-                        <ul className="list-disc pl-6 space-y-2">
-                            <li>Rescisão de contrato e verbas rescisórias</li>
-                            <li>Horas extras não pagas</li>
-                            <li>Assédio moral no ambiente de trabalho</li>
-                            <li>Doenças ocupacionais e acidentes de trabalho</li>
-                            <li>Reconhecimento de vínculo empregatício</li>
-                            <li>Problemas com FGTS e seguro-desemprego</li>
-                            <li>Demissões indevidas e sem justa causa</li>
-                        </ul>
-
-                        <p>
-                            Seja qual for sua situação, entrar em contato com um especialista é o primeiro passo para garantir seus direitos.
-                        </p>
-                    </div>
-
-                    <Button
-                        className="mt-8 bg-juris-accent hover:bg-opacity-80 text-white font-medium"
-                        onClick={() => {
-                            // Scroll to top to focus on the form
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                            // Focus on the input after scrolling
-                            setTimeout(() => {
-                                const phoneInput = document.querySelector('input[name="phone"]');
-                                if (phoneInput) {
-                                    (phoneInput as HTMLInputElement).focus();
-                                }
-                            }, 800);
-                        }}
-                    >
-                        Falar com um especialista agora
-                    </Button>
-                </motion.div>
-            </main>
-
+            </main >
+            <a
+                href="https://wa.me/5511967801655?text=Olá, preciso de ajuda com um problema trabalhista."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300"
+                aria-label="Fale conosco no WhatsApp"
+            >
+                <WhatsAppIcon sx={{ fontSize: '40px' }} />
+            </a>
             <Footer />
-        </div>
+        </div >
     );
 };
 
@@ -366,7 +449,7 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => {
     return (
-        <div className="bg-white bg-opacity-5 p-6 rounded-lg border border-white border-opacity-10 hover:border-juris-accent transition-colors">
+        <div className="bg-white bg-opacity-5 p-6 rounded-lg border border-white border-opacity-10 hover:border-juris-accent transition-crs">
             <div className="text-juris-accent mb-4 p-3 bg-juris-accent bg-opacity-10 inline-block rounded-lg">
                 {icon}
             </div>
