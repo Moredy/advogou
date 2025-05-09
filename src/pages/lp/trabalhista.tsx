@@ -199,7 +199,7 @@ const TrabalhistaExpress: React.FC = () => {
             // Navigate to thank you page or home page
             setTimeout(() => {
                 form.reset();
-                window.open('https://wa.me/5511999998888?text=Ol%C3%A1%2C%20fui%20indicado%20pela%20Advogou.com%2C%20pode%20me%20ajudar%20com%20meu%20problema%20trabalhista%3F')
+                window.open(`https://wa.me/${matchingLawyer.phone}?text=Ol%C3%A1%2C%20fui%20indicado%20pela%20Advogou.com%2C%20pode%20me%20ajudar%20com%20meu%20problema%20trabalhista%3F`)
             }, 500);
         } catch (err) {
             console.error('Erro ao enviar solicitação:', err);
