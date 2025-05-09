@@ -343,7 +343,7 @@ const TrabalhistaExpress: React.FC = () => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.2 }}
                 >
-                    <h2 className="text-2xl font-medium mb-4 text-white">
+                    <h2 className="text-2xl md:text-center font-medium mb-4 text-white">
                         Precisa de orientação?
                     </h2>
                     <p className="text-juris-text text-opacity-80 mb-8 max-w-2xl mx-auto">
