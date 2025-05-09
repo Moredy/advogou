@@ -53,7 +53,7 @@ interface LawyerCardProps {
 
 const LawyerCard: React.FC<LawyerCardProps> = ({ image, name, role, quote, badges }) => {
     return (
-        <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-[#9b87f5]/30 transition-all duration-300 overflow-hidden">
+        <Card className="bg-white/5 max-w-[350px] backdrop-blur-sm border-white/10 hover:border-[#9b87f5]/30 transition-all duration-300 overflow-hidden">
             <div className="h-64 overflow-hidden">
                 <img
                     src={image}
@@ -320,7 +320,7 @@ const TrabalhistaExpress: React.FC = () => {
                         Profissional destaque
                     </h2>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <div className="flex justify-center">
                         <LawyerCard
                             image="https://images.unsplash.com/photo-1615348411055-3492a2c76ca2?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                             name="Dra. Márcia Maria"
