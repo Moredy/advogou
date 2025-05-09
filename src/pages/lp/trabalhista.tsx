@@ -165,8 +165,7 @@ const TrabalhistaExpress: React.FC = () => {
             return null;
         }
     };
-    //    const onSubmit = async (data: z.infer<typeof phoneSchema>) => {
-    const onSubmit = async () => {
+    const onSubmit = async (data: z.infer<typeof phoneSchema>) => {
         setIsSubmitting(true);
 
         try {
@@ -177,7 +176,7 @@ const TrabalhistaExpress: React.FC = () => {
                 lawyer_id: matchingLawyer.id,
                 client_name: 'Não informado',
                 client_email: `cliente_${new Date().getTime()}@example.com`,
-                client_phone: `55555555555`,//data.phone,
+                client_phone: data.phone,
                 case_area: 'Direito Trabalhista'.toLowerCase(),
                 description: 'Cliente solicitou contato rápido através da página de acesso rapido.',
                 status: 'pending'
@@ -195,9 +194,12 @@ const TrabalhistaExpress: React.FC = () => {
                 description: 'Um advogado trabalhista entrará em contato em breve.',
             });
 
+         
+
             // Navigate to thank you page or home page
             setTimeout(() => {
                 form.reset();
+                window.open('https://wa.me/5511999998888?text=Ol%C3%A1%2C%20fui%20indicado%20pela%20Advogou.com%2C%20pode%20me%20ajudar%20com%20meu%20problema%20trabalhista%3F')
             }, 500);
         } catch (err) {
             console.error('Erro ao enviar solicitação:', err);
@@ -348,7 +350,7 @@ const TrabalhistaExpress: React.FC = () => {
                         Agende uma conversa sem compromisso para tirar suas dúvidas a respeito dos seus direitos no trabalho
                     </p>
 
-                    <Button className="w-full mb-5 bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6">
+                    <Button onClick={()=> window.open('https://wa.me/5511999998888?text=Ol%C3%A1%2C%20fui%20indicado%20pela%20Advogou.com%2C%20pode%20me%20ajudar%20com%20meu%20problema%20trabalhista%3F')} className="w-full mb-5 bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6">
                         Encontrar um advogado
                     </Button>
                 </motion.div >
