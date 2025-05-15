@@ -194,7 +194,7 @@ const TrabalhistaExpress: React.FC = () => {
                 description: 'Um advogado trabalhista entrará em contato em breve.',
             });
 
-         
+
 
             // Navigate to thank you page or home page
             setTimeout(() => {
@@ -233,11 +233,11 @@ const TrabalhistaExpress: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h1 className="text-2xl md:text-4xl font-semibold mb-4 text-white">
+                    <h1 className="text-2xl uppercase md:text-4xl font-semibold mb-4 text-white font-inter">
                         Sofreu Injustiça no Trabalho?
                     </h1>
-                    <p className="text-lg md:text-xl max-w-3xl mx-auto text-juris-text text-opacity-90">
-                        Receba orientação de um de nossos advogados
+                    <p className="text-lg font-inter md:text-xl max-w-3xl mx-auto text-juris-text text-opacity-90">
+                        Resolva seu problema com orientação de um de nossos advogados
                     </p>
                 </motion.div>
 
@@ -251,64 +251,17 @@ const TrabalhistaExpress: React.FC = () => {
                     <div className="backdrop-blur-sm px-8 rounded-lg ">
 
 
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="phone"
-                                    render={({ field }) => (
-                                        <FormItem className="w-full">
-                                            <FormLabel className="text-white">Telefone com WhatsApp</FormLabel>
-                                            <FormControl>
-                                                <div className="flex items-center w-full bg-white bg-opacity-5 border border-white border-opacity-20 rounded-md">
-                                                    <div className="px-3">
-                                                        <Phone className="text-white" size={18} />
-                                                    </div>
-                                                    <Input
-                                                        placeholder="(11) 95555-5555"
-                                                        className="bg-transparent border-none text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none w-full"
-                                                        required
-                                                        type="tel"
-                                                        value={formatPhoneNumber(field.value)}
-                                                        onChange={(e) => {
-                                                            const numbers = e.target.value.replace(/\D/g, '').slice(0, 11);
-                                                            field.onChange(numbers);
-                                                        }}
-                                                        maxLength={15}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="text-red-400" />
-                                        </FormItem>
-                                    )}
-                                />
+                        <Button onClick={() => window.open('https://wa.me/5511913192435?text=Ol%C3%A1%2C%20fui%20indicado%20pela%20Advogou.com%2C%20pode%20me%20ajudar%20com%20meu%20problema%20trabalhista%3F')} className="w-full mb-5 bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6">
+                            Falar com um advogado
+                        </Button>
 
-
-
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6"
-
-                                >
-                                    {isSubmitting ? (
-                                        "Enviando..."
-                                    ) : (
-                                        <>
-                                            Quero falar com um advogado
-                                            <ArrowRight size={18} />
-                                        </>
-                                    )}
-                                </Button>
-                            </form>
-                        </Form>
-
-                        <p className="text-sm text-gray-400 mt-4 text-center">
-                            Garantimos total sigilo e proteção dos seus dados
-                        </p>
+               
                     </div>
-                </motion.div >
 
+               
+
+                </motion.div >
+     <div className="border-t border-gray-300 my-4 opacity-[10%]"></div>
                 {/* NEW SECTION: Team experts */}
                 < motion.div
                     className="mt-16 md:mt-24 mb-20"
@@ -350,8 +303,8 @@ const TrabalhistaExpress: React.FC = () => {
                         Agende uma conversa sem compromisso para tirar suas dúvidas a respeito dos seus direitos no trabalho
                     </p>
 
-                    <Button onClick={()=> window.open('https://wa.me/5511913192435?text=Ol%C3%A1%2C%20fui%20indicado%20pela%20Advogou.com%2C%20pode%20me%20ajudar%20com%20meu%20problema%20trabalhista%3F')} className="w-full mb-5 bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6">
-                        Encontrar um advogado
+                    <Button onClick={() => window.open('https://wa.me/5511913192435?text=Ol%C3%A1%2C%20fui%20indicado%20pela%20Advogou.com%2C%20pode%20me%20ajudar%20com%20meu%20problema%20trabalhista%3F')} className="w-full mb-5 bg-yellow-400 hover:bg-yellow-500 text-black font-medium flex items-center justify-center gap-2 py-6">
+                        Receber orientação
                     </Button>
                 </motion.div >
 
@@ -405,10 +358,10 @@ const TrabalhistaExpress: React.FC = () => {
 
                         <AccordionItem value="item-5" className="border-white/10">
                             <AccordionTrigger className="text-white hover:no-underline">
-                            Sofri um acidente de trabalho. Quais são meus direitos?
+                                Sofri um acidente de trabalho. Quais são meus direitos?
                             </AccordionTrigger>
                             <AccordionContent className="text-juris-text">
-                            Se você sofreu um acidente durante o trabalho ou no trajeto entre sua casa e a empresa, tem direito a estabilidade no emprego por 12 meses após o retorno, auxílio-doença acidentário (caso precise se afastar por mais de 15 dias), além de eventual indenização por danos morais ou materiais, se houver culpa da empresa. A empresa também deve emitir a CAT (Comunicação de Acidente de Trabalho), mesmo que o acidente pareça leve.
+                                Se você sofreu um acidente durante o trabalho ou no trajeto entre sua casa e a empresa, tem direito a estabilidade no emprego por 12 meses após o retorno, auxílio-doença acidentário (caso precise se afastar por mais de 15 dias), além de eventual indenização por danos morais ou materiais, se houver culpa da empresa. A empresa também deve emitir a CAT (Comunicação de Acidente de Trabalho), mesmo que o acidente pareça leve.
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
